@@ -25,7 +25,7 @@ BEGIN
 
         -- Saldo aleatorio o nulo
         IF DBMS_RANDOM.VALUE(0,1) < 0.15 THEN
-            v_saldo := DEFAULT 0; -- 15% sin saldo
+            v_saldo := 0; -- 15% sin saldo
         ELSE
             v_saldo := ROUND(DBMS_RANDOM.VALUE(0, 5000000), 2); -- entre 0 y 5 millones
         END IF;
