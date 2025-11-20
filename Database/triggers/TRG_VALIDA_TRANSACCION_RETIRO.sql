@@ -22,7 +22,7 @@ BEGIN
         -- Validar cuenta activa
         IF v_estado_cuenta != 1 THEN
             RAISE_APPLICATION_ERROR(-20060, 
-                'No se puede realizar operación en cuenta inactiva');
+                'No se puede realizar operación en cuenta inactiva o bloqueada.');
         END IF;
         
         -- Validar saldo suficiente
