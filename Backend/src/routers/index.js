@@ -1,0 +1,32 @@
+import { Router } from 'express';
+import listAllRoutes from './client/listAll.route.js';
+import createRoutes from './client/create.route.js';
+import getByIdRoutes from './client/getById.route.js';
+import updateRoutes from './client/update.route.js';
+import deleteRoutes from './client/delete.route.js';
+import searchByIdentificacionRoutes from './client/searchByIdentificacion.route.js';
+
+import createAccountRoutes from './account/create.route.js';
+import listByClienteAccountRoutes from './account/listByCliente.route.js';
+import changeEstadoAccountRoutes from './account/changeEstado.route.js';
+import consultarSaldoAccountRoutes from './account/consultarSaldo.route.js';
+import validarActivaAccountRoutes from './account/validarActiva.route.js';
+
+const router = Router();
+
+// Rutas de clientes
+router.use('/api/clientes', listAllRoutes);
+router.use('/api/clientes', createRoutes);
+router.use('/api/clientes', getByIdRoutes);
+router.use('/api/clientes', updateRoutes);
+router.use('/api/clientes', deleteRoutes);
+router.use('/api/clientes', searchByIdentificacionRoutes);
+
+// Rutas de cuentas
+router.use('/api/cuentas', createAccountRoutes);
+router.use('/api/cuentas', listByClienteAccountRoutes);
+router.use('/api/cuentas', changeEstadoAccountRoutes);
+router.use('/api/cuentas', consultarSaldoAccountRoutes);
+router.use('/api/cuentas', validarActivaAccountRoutes);
+
+export default router;

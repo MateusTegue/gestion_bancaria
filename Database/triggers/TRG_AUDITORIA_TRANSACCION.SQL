@@ -1,0 +1,30 @@
+CREATE OR REPLACE TRIGGER trg_auditoria_transacciones
+    AFTER INSERT OR UPDATE ON PROYECTODB.TBL_TRANSACCIONES
+    FOR EACH ROW
+DECLARE
+    v_auditoria_id NUMBER;
+    v_usuario_id NUMBER := 1; -- Usuario del sistema por defecto
+BEGIN
+    -- Obtener siguiente ID de auditoría
+    SELECT NVL(MAX(AUDITORIA_ID), 0) + 1 
+    INTO v_auditoria_id
+    FROM PROYECTODB.TBL_AUDITORIA_TRANSACCIONES;
+    
+    -- Registrar en auditoría
+    INSERT INTO PROYECTODB.TBL_AUDITORIA_TRANSACCIONES (
+        AUDITORIA_ID,
+        TRANSACCION_ID,
+        USUARIO_ID,
+        FECHA_OPERACION
+    ) VALUES (
+        v_auditoria_id,
+        :NEW.TRANSACCION_ID,
+        v_usuario_id,
+        SYSDATE
+    );
+END;
+/
+
+
+INSERT INTO PROYECTODB.TBL_TRANSACCIONES (TRANSACCION_ID, CUENTA_ID, TIPO_TRANSACCION_ID, MONTO, FECHA_TRANSACCION)
+VALUES (4002, 'CUENTA_0438', 7, 9908888888000.00, SYSDATE);
