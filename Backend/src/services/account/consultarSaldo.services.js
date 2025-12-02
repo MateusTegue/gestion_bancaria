@@ -31,7 +31,7 @@ export const consultarSaldo = async (res, cuentaId) => {
             return;
         }
         
-        response200(res, { cuentaId, saldo }, "Saldo consultado exitosamente");
+        response200(res, { saldo }, "Saldo consultado exitosamente");
         
     } catch (error) {
         console.error('Error al consultar saldo:', error);

@@ -41,7 +41,6 @@ export const changeAccountEstado = async (res, cuentaId, estadoId, usuarioId) =>
 
         await connection.commit();
         
-        // Consultar la cuenta actualizada
         const consultResult = await connection.execute(
             `SELECT 
                 CUENTA_ID,
@@ -62,12 +61,16 @@ export const changeAccountEstado = async (res, cuentaId, estadoId, usuarioId) =>
         }
         
         const row = consultResult.rows[0];
+        const estadoId = row[3];
+        const estado = estadoId === 1 ? 'ACTIVA' : estadoId === 2 ? 'INACTIVA' : 'N/A';
+        
         const cuentaActualizada = {
-            cuentaId: row[0],
+            id: row[0],
             clienteId: row[1],
-            tipoCuentaId: row[2],
-            estadoId: row[3],
-            saldo: row[4]
+            numeroCuenta: String(row[0]),
+            tipoCuenta: row[2] ? `Tipo ${row[2]}` : null,
+            saldo: row[4] || 0,
+            estado: estado
         };
         
         response200(res, cuentaActualizada, "Estado de cuenta actualizado exitosamente");

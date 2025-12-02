@@ -14,7 +14,6 @@ import validarActivaAccountRoutes from './account/validarActiva.route.js';
 
 const router = Router();
 
-// Rutas de clientes
 router.use('/api/clientes', listAllRoutes);
 router.use('/api/clientes', createRoutes);
 router.use('/api/clientes', getByIdRoutes);
@@ -22,7 +21,6 @@ router.use('/api/clientes', updateRoutes);
 router.use('/api/clientes', deleteRoutes);
 router.use('/api/clientes', searchByIdentificacionRoutes);
 
-// Rutas de cuentas
 router.use('/api/cuentas', createAccountRoutes);
 router.use('/api/cuentas', listByClienteAccountRoutes);
 router.use('/api/cuentas', changeEstadoAccountRoutes);

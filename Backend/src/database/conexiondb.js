@@ -1,7 +1,5 @@
-import oracledb from 'oracledb';
-import dotenv from 'dotenv';
-
-dotenv.config(); 
+import 'dotenv/config';
+import oracledb from 'oracledb'; 
 
 export async function connectDB() {
   try {

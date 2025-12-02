@@ -31,6 +31,7 @@ export const listAccountsByCliente = async (res, clienteId) => {
         while ((row = await resultSet.getRow())) {
             cuentas.push({
                 cuentaId: row[0],
+                clienteId: clienteId,
                 tipoCuentaId: row[1],
                 estadoId: row[2],
                 saldo: row[3]

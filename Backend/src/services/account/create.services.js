@@ -39,7 +39,6 @@ export const createAccount = async (res, accountData) => {
 
         await connection.commit();
         
-        // Consultar la cuenta creada para retornar todos sus datos
         const consultResult = await connection.execute(
             `SELECT 
                 CUENTA_ID,
@@ -83,7 +82,6 @@ export const createAccount = async (res, accountData) => {
                 return;
             }
             if (error.errorNum === -20012) {
-                // Parsear el error para obtener un mensaje más claro
                 const parsedMessage = parseOracleError(error);
                 if (parsedMessage.includes('ya existe')) {
                     response400(res, parsedMessage);
@@ -93,13 +91,11 @@ export const createAccount = async (res, accountData) => {
                 return;
             }
             
-            // Para otros errores, parsear el mensaje
             const parsedMessage = parseOracleError(error);
             response500(res, parsedMessage);
             return;
         }
         
-        // Si no es un error de Oracle conocido, parsear igualmente
         const parsedMessage = parseOracleError(error);
         response500(res, parsedMessage || "Error al crear cuenta");
         
