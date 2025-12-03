@@ -1,8 +1,10 @@
 import { ref } from 'vue';
 import { clienteService } from '../../services/clienteService';
+import { useToast } from '../../composables/useToast';
 import type { Cliente } from '../../types';
 
 export const useClientesList = () => {
+  const { success, error: showError } = useToast();
   const clientes = ref<Cliente[]>([]);
   const loading = ref(false);
   const error = ref('');
@@ -57,11 +59,14 @@ export const useClientesList = () => {
     deleting.value = true;
     try {
       await clienteService.delete(clienteToDelete.value.id);
+      success('Cliente eliminado exitosamente');
       await loadClientes();
       showDeleteModal.value = false;
       clienteToDelete.value = null;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Error al eliminar cliente';
+      const errorMessage = err instanceof Error ? err.message : 'Error al eliminar cliente';
+      error.value = errorMessage;
+      showError(errorMessage);
     } finally {
       deleting.value = false;
     }

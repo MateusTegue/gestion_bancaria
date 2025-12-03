@@ -70,9 +70,11 @@ import CuentasTable from './cuentas/CuentasTable.vue';
 import CreateCuentaModal from './cuentas/CreateCuentaModal.vue';
 import SaldoModal from './cuentas/SaldoModal.vue';
 import { cuentaService } from '../services/cuentaService';
+import { useToast } from '../composables/useToast';
 import type { Cuenta } from '../types';
 
 const route = useRoute();
+const { success, error: showError, info } = useToast();
 
 const cuentas = ref<Cuenta[]>([]);
 const loading = ref(false);
@@ -119,12 +121,15 @@ const handleCreateCuenta = async (data: Omit<Cuenta, 'id'>) => {
 
   try {
     await cuentaService.create(data);
+    success('Cuenta creada exitosamente');
     showCreateModal.value = false;
     if (clienteIdFilter.value) {
       await loadCuentas(Number(clienteIdFilter.value));
     }
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Error al crear cuenta';
+    const errorMessage = err instanceof Error ? err.message : 'Error al crear cuenta';
+    error.value = errorMessage;
+    showError(errorMessage);
   } finally {
     creating.value = false;
   }
@@ -134,8 +139,11 @@ const handleConsultarSaldo = async (cuentaId: number) => {
   try {
     saldoActual.value = await cuentaService.consultarSaldo(cuentaId);
     showSaldoModal.value = true;
+    info('Saldo consultado correctamente');
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Error al consultar saldo';
+    const errorMessage = err instanceof Error ? err.message : 'Error al consultar saldo';
+    error.value = errorMessage;
+    showError(errorMessage);
   }
 };
 
@@ -145,11 +153,14 @@ const handleCambiarEstado = async (cuenta: Cuenta) => {
   const nuevoEstado = cuenta.estado === 'ACTIVA' ? 'INACTIVA' : 'ACTIVA';
   try {
     await cuentaService.changeEstado(cuenta.id, nuevoEstado);
+    success(`Estado de cuenta cambiado a ${nuevoEstado}`);
     if (clienteIdFilter.value) {
       await loadCuentas(Number(clienteIdFilter.value));
     }
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Error al cambiar estado';
+    const errorMessage = err instanceof Error ? err.message : 'Error al cambiar estado';
+    error.value = errorMessage;
+    showError(errorMessage);
   }
 };
 
