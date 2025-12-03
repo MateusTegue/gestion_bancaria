@@ -1,10 +1,12 @@
 import { ref } from 'vue';
 import { clienteService } from '../../services/clienteService';
 import { useToast } from '../../composables/useToast';
+import { useAuth } from '../../composables/useAuth';
 import type { Cliente } from '../../types';
 
 export const useClientesList = () => {
   const { success, error: showError } = useToast();
+  const { getUsuario } = useAuth();
   const clientes = ref<Cliente[]>([]);
   const loading = ref(false);
   const error = ref('');
@@ -56,9 +58,15 @@ export const useClientesList = () => {
   const handleDeleteConfirm = async () => {
     if (!clienteToDelete.value?.id) return;
 
+    const usuario = getUsuario();
+    if (!usuario?.usuarioId) {
+      showError('Usuario no autenticado');
+      return;
+    }
+
     deleting.value = true;
     try {
-      await clienteService.delete(clienteToDelete.value.id);
+      await clienteService.delete(clienteToDelete.value.id, usuario.usuarioId);
       success('Cliente eliminado exitosamente');
       await loadClientes();
       showDeleteModal.value = false;

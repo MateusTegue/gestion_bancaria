@@ -95,8 +95,6 @@ export const realizarTransferencia = async (res, cuentaOrigen, cuentaDestino, mo
         response200(res, transferenciaData, "Transferencia realizada exitosamente");
         
     } catch (error) {
-        console.error('Error al realizar transferencia:', error);
-        
         if (error.errorNum) {
             const errorNum = Math.abs(error.errorNum);
             
@@ -105,7 +103,6 @@ export const realizarTransferencia = async (res, cuentaOrigen, cuentaDestino, mo
                 return;
             }
             if (errorNum === 20002) {
-                // Extraer el número de cuenta del mensaje si está disponible
                 const errorMessage = error.message || '';
                 const cuentaMatch = errorMessage.match(/cuenta\s+([A-Z0-9_]+)/i);
                 if (cuentaMatch) {

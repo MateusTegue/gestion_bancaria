@@ -69,8 +69,6 @@ export const realizarDeposito = async (res, cuentaId, monto, usuarioId) => {
         response200(res, depositoData, "Depósito realizado exitosamente");
         
     } catch (error) {
-        console.error('Error al realizar depósito:', error);
-        
         if (error.errorNum) {
             const errorNum = Math.abs(error.errorNum);
             

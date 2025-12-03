@@ -74,8 +74,6 @@ export const updateClient = async (res, clienteId, clientData) => {
         response200(res, clienteActualizado, "Cliente actualizado exitosamente");
         
     } catch (error) {
-        console.error('Error al actualizar cliente:', error);
-        
         if (error.errorNum) {
             const errorMessage = error.message || 'Error de base de datos';
             

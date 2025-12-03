@@ -39,7 +39,6 @@ export const useClienteForm = () => {
         direccion: cliente.direccion || '',
       };
     } catch (err) {
-      console.error('Error al cargar cliente:', err);
     } finally {
       loading.value = false;
     }

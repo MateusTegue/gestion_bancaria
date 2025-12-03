@@ -65,8 +65,10 @@ export const clienteService = {
     return mapClienteFromBackend(response.data.data);
   },
 
-  async delete(id: number): Promise<void> {
-    await api.delete<ApiResponse<void>>(`/clientes/${id}`);
+  async delete(id: number, usuarioId: number): Promise<void> {
+    await api.delete<ApiResponse<void>>(`/clientes/${id}`, {
+      data: { usuarioId },
+    });
   },
 
   async searchByIdentificacion(identificacion: string): Promise<Cliente | null> {

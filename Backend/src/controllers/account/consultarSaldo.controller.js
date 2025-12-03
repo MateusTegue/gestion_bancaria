@@ -10,10 +10,8 @@ export const consultarSaldoController = async (req, res) => {
             return;
         }
         
-        // El cuentaId puede ser un string (ej: "CUENTA_0001") o un número
         await consultarSaldo(res, id);
     } catch (error) {
-        console.error('Error en consultarSaldoController:', error);
         response500(res, 'Error al consultar saldo');
     }
 };

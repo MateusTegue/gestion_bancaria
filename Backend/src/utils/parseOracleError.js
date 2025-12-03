@@ -1,11 +1,9 @@
 export const parseOracleError = (error) => {
     const errorMessage = error.message || '';
     
-    // Manejar errores de aplicación específicos (pueden venir como positivo o negativo)
     const errorNum = error.errorNum ? Math.abs(error.errorNum) : null;
     
     if (errorNum === 20002) {
-        // Extraer el número de cuenta del mensaje si está disponible
         const cuentaMatch = errorMessage.match(/cuenta\s+([A-Z0-9_]+)/i);
         if (cuentaMatch) {
             return `Fondos insuficientes en la cuenta ${cuentaMatch[1]}. Por favor, verifique el saldo disponible.`;

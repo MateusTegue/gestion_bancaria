@@ -49,14 +49,6 @@ export const getClientById = async (res, clienteId) => {
         response200(res, cliente, "Cliente encontrado exitosamente");
         
     } catch (error) {
-        console.error('Error al obtener cliente:', error);
-        console.error('Error details:', {
-            message: error.message,
-            errorNum: error.errorNum,
-            code: error.code,
-            clienteId: clienteId
-        });
-        
         if (error.errorNum) {
             if (error.errorNum === -20003) {
                 response404(res, "Cliente no encontrado");

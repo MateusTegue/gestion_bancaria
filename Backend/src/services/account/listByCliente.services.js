@@ -52,8 +52,6 @@ export const listAccountsByCliente = async (res, clienteId) => {
         response200(res, cuentas, message);
         
     } catch (error) {
-        console.error('Error al listar cuentas del cliente:', error);
-        
         if (error.errorNum) {
             response500(res, `Error de base de datos: ${error.message}`);
             return;

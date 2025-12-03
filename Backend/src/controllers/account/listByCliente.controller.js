@@ -14,7 +14,6 @@ export const listAccountsByClienteController = async (req, res) => {
         
         await listAccountsByCliente(res, clienteIdNum);
     } catch (error) {
-        console.error('Error en listAccountsByClienteController:', error);
         response500(res, 'Error al listar cuentas del cliente');
     }
 };

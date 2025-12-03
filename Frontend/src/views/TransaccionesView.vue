@@ -68,7 +68,7 @@
       <!-- Consultar Historial por Cuenta (Solo para ADMON y ANALISTA) -->
       <div v-if="isAdmin || isAnalista" class="bg-white rounded-lg shadow-md p-6 mb-6">
         <h2 class="text-xl font-semibold text-gray-800 mb-4">Consultar Historial por Cuenta</h2>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
           <Input
             id="historialCuentaId"
             v-model="historialForm.cuentaId"
@@ -129,7 +129,7 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="transaccion in historialUsuario" :key="transaccion.transaccionId">
+            <tr v-for="transaccion in paginatedHistorialUsuario" :key="transaccion.transaccionId">
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {{ transaccion.transaccionId }}
               </td>
@@ -156,6 +156,13 @@
             </tr>
           </tbody>
         </table>
+        <Pagination
+          v-if="historialUsuario.length > itemsPerPageUsuario"
+          :current-page="currentPageUsuario"
+          :items-per-page="itemsPerPageUsuario"
+          :total-items="historialUsuario.length"
+          @page-change="currentPageUsuario = $event"
+        />
       </div>
 
       <div v-else-if="historialUsuarioConsultado && historialUsuario.length === 0" class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6">
@@ -195,7 +202,7 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="transaccion in historial" :key="transaccion.transaccionId">
+            <tr v-for="transaccion in paginatedHistorial" :key="transaccion.transaccionId">
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {{ transaccion.transaccionId }}
               </td>
@@ -222,6 +229,13 @@
             </tr>
           </tbody>
         </table>
+        <Pagination
+          v-if="historial.length > itemsPerPageHistorial"
+          :current-page="currentPageHistorial"
+          :items-per-page="itemsPerPageHistorial"
+          :total-items="historial.length"
+          @page-change="currentPageHistorial = $event"
+        />
       </div>
 
         <div v-else-if="historialConsultado && historial.length === 0" class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
@@ -264,6 +278,7 @@ import TransferenciaModal from './transacciones/TransferenciaModal.vue';
 import { transactionService } from '../services/transactionService';
 import { useToast } from '../composables/useToast';
 import { useAuth } from '../composables/useAuth';
+import Pagination from '../components/Pagination.vue';
 import type { HistorialTransaccion } from '../types';
 
 const { success, error: showError } = useToast();
@@ -281,6 +296,12 @@ const historialUsuario = ref<HistorialTransaccion[]>([]);
 const historialConsultado = ref(false);
 const historialUsuarioConsultado = ref(false);
 
+const currentPageUsuario = ref(1);
+const itemsPerPageUsuario = ref(10);
+
+const currentPageHistorial = ref(1);
+const itemsPerPageHistorial = ref(10);
+
 const historialForm = ref({
   cuentaId: '',
   fechaInicio: '',
@@ -296,9 +317,9 @@ const getUsuarioId = (): number => {
   const usuarioStr = localStorage.getItem('usuario');
   if (usuarioStr) {
     const usuario = JSON.parse(usuarioStr);
-    return usuario.usuarioId || 1; // Default a 1 si no hay usuario
+    return usuario.usuarioId || 1;
   }
-  return 1; // Default a 1
+  return 1;
 };
 
 const handleDeposito = async (data: { cuentaId: string; monto: number }) => {
@@ -308,7 +329,6 @@ const handleDeposito = async (data: { cuentaId: string; monto: number }) => {
     success(`Depósito de $${data.monto.toLocaleString()} realizado exitosamente. Saldo actualizado: $${result.saldoActualizado.toLocaleString()}`);
     showDepositoModal.value = false;
   } catch (err: any) {
-    // Extraer el mensaje del error de la respuesta del backend
     let errorMessage = 'Error al realizar depósito';
     
     if (err?.response?.data?.message) {
@@ -319,7 +339,6 @@ const handleDeposito = async (data: { cuentaId: string; monto: number }) => {
       errorMessage = err.message;
     }
     
-    // Limpiar mensajes de error de Oracle que contengan trazas técnicas
     if (errorMessage.includes('ORA-') || errorMessage.includes('ORA-06512')) {
       const lines = errorMessage.split('\n');
       const usefulLines = lines.filter(line => 
@@ -347,7 +366,6 @@ const handleRetiro = async (data: { cuentaId: string; monto: number }) => {
     success(`Retiro de $${data.monto.toLocaleString()} realizado exitosamente. Saldo actualizado: $${result.saldoActualizado.toLocaleString()}`);
     showRetiroModal.value = false;
   } catch (err: any) {
-    // Extraer el mensaje del error de la respuesta del backend
     let errorMessage = 'Error al realizar retiro';
     
     if (err?.response?.data?.message) {
@@ -358,7 +376,6 @@ const handleRetiro = async (data: { cuentaId: string; monto: number }) => {
       errorMessage = err.message;
     }
     
-    // Limpiar mensajes de error de Oracle que contengan trazas técnicas
     if (errorMessage.includes('ORA-') || errorMessage.includes('ORA-06512')) {
       const lines = errorMessage.split('\n');
       const usefulLines = lines.filter(line => 
@@ -400,7 +417,6 @@ const handleTransferencia = async (data: { cuentaOrigen: string; cuentaDestino: 
     );
     showTransferenciaModal.value = false;
   } catch (err: any) {
-    // Extraer el mensaje del error de la respuesta del backend
     let errorMessage = 'Error al realizar transferencia';
     
     if (err?.response?.data?.message) {
@@ -411,7 +427,6 @@ const handleTransferencia = async (data: { cuentaOrigen: string; cuentaDestino: 
       errorMessage = err.message;
     }
     
-    // Limpiar mensajes de error de Oracle que contengan trazas técnicas
     if (errorMessage.includes('ORA-') || errorMessage.includes('ORA-06512')) {
       const lines = errorMessage.split('\n');
       const usefulLines = lines.filter(line => 
@@ -446,6 +461,7 @@ const handleConsultarHistorial = async () => {
   loadingHistorial.value = true;
   historialError.value = '';
   historialConsultado.value = false;
+  currentPageHistorial.value = 1;
 
   try {
     const transacciones = await transactionService.generarHistorial(
@@ -476,9 +492,9 @@ const handleCargarHistorialUsuario = async () => {
 
   loadingHistorialUsuario.value = true;
   historialUsuarioConsultado.value = false;
+  currentPageUsuario.value = 1;
 
   try {
-    // Solo enviar fechas si ambas están presentes
     const fechaInicio = historialUsuarioForm.value.fechaInicio || undefined;
     const fechaFin = historialUsuarioForm.value.fechaFin || undefined;
     
@@ -509,6 +525,18 @@ const handleLimpiarFiltros = () => {
   handleCargarHistorialUsuario();
 };
 
+const paginatedHistorialUsuario = computed(() => {
+  const start = (currentPageUsuario.value - 1) * itemsPerPageUsuario.value;
+  const end = start + itemsPerPageUsuario.value;
+  return historialUsuario.value.slice(start, end);
+});
+
+const paginatedHistorial = computed(() => {
+  const start = (currentPageHistorial.value - 1) * itemsPerPageHistorial.value;
+  const end = start + itemsPerPageHistorial.value;
+  return historial.value.slice(start, end);
+});
+
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
   return date.toLocaleString('es-ES', {
@@ -520,10 +548,8 @@ const formatDate = (dateString: string): string => {
   });
 };
 
-// Cargar historial automáticamente al montar el componente
 onMounted(() => {
   if (usuario.value?.usuarioId) {
-    // Cargar todas las transacciones sin filtro de fechas por defecto
     handleCargarHistorialUsuario();
   }
 });

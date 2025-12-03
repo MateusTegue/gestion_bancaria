@@ -46,8 +46,6 @@ export const searchClientByIdentificacion = async (res, identificacion) => {
         response200(res, cliente, "Cliente encontrado exitosamente");
         
     } catch (error) {
-        console.error('Error al buscar cliente por identificación:', error);
-        
         if (error.errorNum) {
             response500(res, `Error de base de datos: ${error.message}`);
             return;

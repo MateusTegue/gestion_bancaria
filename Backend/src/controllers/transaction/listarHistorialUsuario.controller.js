@@ -11,7 +11,6 @@ export const listarHistorialUsuarioController = async (req, res) => {
             return;
         }
         
-        // Validar fechas si se proporcionan
         if (fechaInicio && fechaFin) {
             const fechaInicioDate = new Date(fechaInicio);
             const fechaFinDate = new Date(fechaFin);
@@ -34,7 +33,6 @@ export const listarHistorialUsuarioController = async (req, res) => {
         
         await listarHistorialUsuario(res, usuarioId, fechaInicio || null, fechaFin || null);
     } catch (error) {
-        console.error('Error en listarHistorialUsuarioController:', error);
         response500(res, 'Error al listar historial del usuario');
     }
 };

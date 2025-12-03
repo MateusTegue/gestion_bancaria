@@ -16,7 +16,6 @@ export const generarHistorialController = async (req, res) => {
             return;
         }
         
-        // Validar formato de fechas
         const fechaInicioDate = new Date(fechaInicio);
         const fechaFinDate = new Date(fechaFin);
         
@@ -32,7 +31,6 @@ export const generarHistorialController = async (req, res) => {
         
         await generarHistorial(res, id, fechaInicioDate, fechaFinDate);
     } catch (error) {
-        console.error('Error en generarHistorialController:', error);
         response500(res, 'Error al generar historial');
     }
 };

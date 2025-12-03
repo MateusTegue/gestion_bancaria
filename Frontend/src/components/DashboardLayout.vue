@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex">
+  <div class="min-h-screen bg-gray-50">
     <DashboardSidebar
       :is-open="isSidebarOpen"
       @toggle="toggleSidebar"
@@ -11,9 +11,15 @@
       @close="toggleSidebar"
     />
 
-    <div class="flex-1 flex flex-col overflow-hidden">
+    <div 
+      class="flex flex-col transition-all duration-300 ease-in-out"
+      :class="[
+        isSidebarOpen ? 'md:ml-64' : 'md:ml-20'
+      ]"
+    >
       <DashboardHeader
         :title="pageTitle"
+        :is-sidebar-open="isSidebarOpen"
         @toggle-sidebar="toggleSidebar"
       />
 
@@ -41,7 +47,6 @@ const { success } = useToast();
 
 const isSidebarOpen = ref(true);
 
-// Título de la página basado en la ruta
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
     home: 'Dashboard',
@@ -66,7 +71,6 @@ const handleLogout = () => {
   router.push('/login');
 };
 
-// Cerrar sidebar en móvil al cambiar de ruta
 const handleRouteChange = () => {
   if (window.innerWidth < 768) {
     isSidebarOpen.value = false;
@@ -74,7 +78,6 @@ const handleRouteChange = () => {
 };
 
 onMounted(() => {
-  // Ajustar sidebar según el tamaño de la pantalla
   if (window.innerWidth < 768) {
     isSidebarOpen.value = false;
   }
@@ -82,8 +85,6 @@ onMounted(() => {
   router.afterEach(handleRouteChange);
 });
 
-onUnmounted(() => {
-  // Cleanup si es necesario
-});
+onUnmounted(() => {});
 </script>
 

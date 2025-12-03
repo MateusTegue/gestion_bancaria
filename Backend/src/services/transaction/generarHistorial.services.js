@@ -63,8 +63,6 @@ export const generarHistorial = async (res, cuentaId, fechaInicio, fechaFin) => 
         response200(res, transacciones, message);
         
     } catch (error) {
-        console.error('Error al generar historial:', error);
-        
         if (error.errorNum) {
             const errorMessage = error.message || 'Error de base de datos';
             response500(res, `Error de base de datos: ${errorMessage}`);

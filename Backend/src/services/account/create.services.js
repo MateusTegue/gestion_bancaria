@@ -76,8 +76,6 @@ export const createAccount = async (res, accountData) => {
         response201(res, cuentaCreada, "Cuenta creada exitosamente");
         
     } catch (error) {
-        console.error('Error al crear cuenta:', error);
-        
         if (error.errorNum) {
             const errorNum = Math.abs(error.errorNum);
             
@@ -90,10 +88,8 @@ export const createAccount = async (res, accountData) => {
                 return;
             }
             if (errorNum === 20012) {
-                // Detectar si es un error de cuenta duplicada
                 const errorMessage = error.message || '';
                 if (errorMessage.includes('ORA-00001') || errorMessage.includes('restricción única') || errorMessage.includes('PK_CUENTA_ID')) {
-                    // Extraer el número de cuenta del mensaje si está disponible
                     const cuentaMatch = errorMessage.match(/cuenta\s+([A-Z0-9_]+)/i) || 
                                       errorMessage.match(/CUENTA_ID[^)]*\)/i);
                     if (cuentaMatch && accountData.cuentaId) {

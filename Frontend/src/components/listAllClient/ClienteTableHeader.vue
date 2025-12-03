@@ -21,6 +21,5 @@
 </template>
 
 <script setup lang="ts">
-// Componente para la cabecera de la tabla de clientes
 </script>
 

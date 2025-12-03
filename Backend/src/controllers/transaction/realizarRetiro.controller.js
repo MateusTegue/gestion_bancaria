@@ -22,7 +22,6 @@ export const realizarRetiroController = async (req, res) => {
         
         await realizarRetiro(res, cuentaId, monto, usuarioId);
     } catch (error) {
-        console.error('Error en realizarRetiroController:', error);
         response500(res, 'Error al realizar retiro');
     }
 };

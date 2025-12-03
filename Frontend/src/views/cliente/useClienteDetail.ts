@@ -34,7 +34,6 @@ export const useClienteDetail = () => {
     try {
       cuentas.value = await cuentaService.listByCliente(clienteId.value);
     } catch (err) {
-      console.error('Error al cargar cuentas:', err);
     } finally {
       loadingCuentas.value = false;
     }

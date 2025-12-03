@@ -15,7 +15,6 @@ export const listarHistorialUsuario = async (res, usuarioId, fechaInicio, fechaF
 
         connection = await connectDB();
         
-        // Obtener información del usuario (rol y clienteId)
         const userResult = await connection.execute(
             `SELECT 
                 u.USUARIO_ID,
@@ -37,9 +36,7 @@ export const listarHistorialUsuario = async (res, usuarioId, fechaInicio, fechaF
         const rolId = row[1];
         const clienteId = row[2];
         
-        // Si es CLIENTE (ROL_ID = 3), obtener sus cuentas y filtrar transacciones
         if (rolId === 3 && clienteId) {
-            // Obtener todas las cuentas del cliente
             const cuentasResult = await connection.execute(
                 `BEGIN
                     gestion_cuentas_pkg.listar_cuentas_cliente(:p_cliente_id, :cursor);
@@ -54,7 +51,7 @@ export const listarHistorialUsuario = async (res, usuarioId, fechaInicio, fechaF
             const cuentaIds = [];
             let cuentaRow;
             while ((cuentaRow = await cuentasSet.getRow())) {
-                cuentaIds.push(cuentaRow[0]); // CUENTA_ID
+                cuentaIds.push(cuentaRow[0]);
             }
             await cuentasSet.close();
             
@@ -63,8 +60,6 @@ export const listarHistorialUsuario = async (res, usuarioId, fechaInicio, fechaF
                 return;
             }
             
-            // Construir la consulta SQL para filtrar por las cuentas del cliente
-            // Usar una lista de valores en el IN clause
             const cuentaIdsList = cuentaIds.map(id => `'${id}'`).join(', ');
             let query = `
                 SELECT t.TRANSACCION_ID,
@@ -81,9 +76,7 @@ export const listarHistorialUsuario = async (res, usuarioId, fechaInicio, fechaF
             
             const binds = {};
             
-            // Agregar filtro de fechas si se proporcionan
             if (fechaInicio && fechaFin) {
-                // Convertir strings a objetos Date y ajustar para incluir todo el día
                 const fechaInicioDate = new Date(fechaInicio);
                 fechaInicioDate.setHours(0, 0, 0, 0);
                 
@@ -117,9 +110,7 @@ export const listarHistorialUsuario = async (res, usuarioId, fechaInicio, fechaF
             response200(res, transacciones, message);
             
         } else {
-            // Para ADMON o ANALISTA, usar listar_todas_transacciones
             if (fechaInicio && fechaFin) {
-                // Convertir strings a objetos Date y ajustar para incluir todo el día
                 const fechaInicioDate = new Date(fechaInicio);
                 fechaInicioDate.setHours(0, 0, 0, 0);
                 
@@ -162,7 +153,6 @@ export const listarHistorialUsuario = async (res, usuarioId, fechaInicio, fechaF
                 
                 response200(res, transacciones, message);
             } else {
-                // Sin filtro de fechas
                 const result = await connection.execute(
                     `BEGIN
                         gestion_transacciones_pkg.listar_todas_transacciones(:cursor);
@@ -196,8 +186,6 @@ export const listarHistorialUsuario = async (res, usuarioId, fechaInicio, fechaF
         }
         
     } catch (error) {
-        console.error('Error al listar historial del usuario:', error);
-        
         if (error.errorNum) {
             const errorMessage = error.message || 'Error de base de datos';
             response500(res, `Error de base de datos: ${errorMessage}`);

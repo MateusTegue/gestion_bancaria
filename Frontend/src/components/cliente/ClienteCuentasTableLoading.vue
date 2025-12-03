@@ -5,6 +5,5 @@
 </template>
 
 <script setup lang="ts">
-// Componente para el estado de carga de la tabla
 </script>
 

@@ -34,8 +34,6 @@ export const getClientByIdController = async (req, res) => {
         
         await getClientById(res, clienteId);
     } catch (error) {
-        console.error('Error en getClientByIdController:', error);
-        console.error('Request params:', req.params);
         response500(res, 'Error al obtener el cliente');
     }
 };

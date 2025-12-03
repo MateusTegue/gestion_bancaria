@@ -3,6 +3,5 @@
 </template>
 
 <script setup lang="ts">
-// Componente para el overlay/fondo oscuro del modal
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-white shadow-sm border-b border-gray-200">
+  <header class="fixed top-0 left-0 right-0 bg-white shadow-sm border-b border-gray-200 z-40" :class="headerClass">
     <div class="px-4 sm:px-6 lg:px-8 py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center">
@@ -26,14 +26,23 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+
 interface Props {
   title: string;
+  isSidebarOpen?: boolean;
 }
 
-defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  isSidebarOpen: true,
+});
 
 defineEmits<{
   'toggle-sidebar': [];
 }>();
+
+const headerClass = computed(() => {
+  return props.isSidebarOpen ? 'md:left-64' : 'md:left-20';
+});
 </script>
 

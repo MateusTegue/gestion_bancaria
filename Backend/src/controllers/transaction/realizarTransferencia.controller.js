@@ -32,7 +32,6 @@ export const realizarTransferenciaController = async (req, res) => {
         
         await realizarTransferencia(res, cuentaOrigen, cuentaDestino, monto, usuarioId);
     } catch (error) {
-        console.error('Error en realizarTransferenciaController:', error);
         response500(res, 'Error al realizar transferencia');
     }
 };

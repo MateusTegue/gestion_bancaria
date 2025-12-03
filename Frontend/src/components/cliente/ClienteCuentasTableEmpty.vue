@@ -5,6 +5,5 @@
 </template>
 
 <script setup lang="ts">
-// Componente para mostrar cuando no hay cuentas
 </script>
 

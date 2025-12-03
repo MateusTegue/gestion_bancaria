@@ -7,11 +7,8 @@ async function main() {
   try {
     await connectDB();
 
-    app.listen(PORT, () => {
-      console.log(`Servidor corriendo en http://localhost:${PORT}`);
-    });
+    app.listen(PORT);
   } catch (error) {
-    console.error('Error al conectarse a la base de datos:', error);
   }
 }
 

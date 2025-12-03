@@ -6,7 +6,6 @@ export const searchClientByIdentificacionController = async (req, res) => {
         const { identificacion } = req.params;
         await searchClientByIdentificacion(res, identificacion);
     } catch (error) {
-        console.error('Error en searchClientByIdentificacionController:', error);
         response500(res, 'Error al buscar el cliente');
     }
 };

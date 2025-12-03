@@ -33,7 +33,6 @@ export const validarCredenciales = async (res, usuario, password) => {
             return;
         }
         
-        // Obtener información del usuario con el nombre del rol y clienteId
         const userResult = await connection.execute(
             `SELECT 
                 u.USUARIO_ID,
@@ -66,8 +65,6 @@ export const validarCredenciales = async (res, usuario, password) => {
         response200(res, usuarioData, "Autenticación exitosa");
         
     } catch (error) {
-        console.error('Error al validar credenciales:', error);
-        
         if (error.errorNum) {
             const errorMessage = error.message || 'Error de base de datos';
             

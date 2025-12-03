@@ -75,8 +75,6 @@ export const createClient = async (res, clientData) => {
         response201(res, clienteCreado, "Cliente creado exitosamente");
         
     } catch (error) {
-        console.error('Error al crear cliente:', error);
-        
         if (error.errorNum) {
             if (error.errorNum === -20001) {
                 response400(res, "El cliente ya existe en el sistema");

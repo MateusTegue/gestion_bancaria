@@ -22,7 +22,6 @@ export const realizarDepositoController = async (req, res) => {
         
         await realizarDeposito(res, cuentaId, monto, usuarioId);
     } catch (error) {
-        console.error('Error en realizarDepositoController:', error);
         response500(res, 'Error al realizar depósito');
     }
 };

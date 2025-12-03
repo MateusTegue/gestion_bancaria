@@ -12,6 +12,5 @@
 </template>
 
 <script setup lang="ts">
-// Componente para el contenedor principal del modal
 </script>
 

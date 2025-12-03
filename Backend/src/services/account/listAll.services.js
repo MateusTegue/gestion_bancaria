@@ -3,6 +3,7 @@ import { connectDB } from '../../database/conexiondb.js';
 import { response200, response500 } from '../../utils/responses.js';
 import { closeConnection } from '../../utils/closeConnection.js';
 import { getEstadoCuentaDescripcion, getTipoCuentaDescripcion } from '../../utils/tipoParametros.js';
+import { parseOracleError } from '../../utils/parseOracleError.js';
 
 export const listAllAccounts = async (res) => {
     let connection = null;
@@ -29,12 +30,14 @@ export const listAllAccounts = async (res) => {
             
             cuentas.push({
                 cuentaId: row[0],
+                id: row[0],
                 clienteId: row[1],
+                numeroCuenta: String(row[0]),
                 tipoCuentaId: tipoCuentaId,
                 tipoCuenta: getTipoCuentaDescripcion(tipoCuentaId),
                 estadoId: estadoId,
                 estado: getEstadoCuentaDescripcion(estadoId),
-                saldo: row[4]
+                saldo: row[4] || 0
             });
         }
         await resultSet.close();
@@ -46,14 +49,15 @@ export const listAllAccounts = async (res) => {
         response200(res, cuentas, message);
         
     } catch (error) {
-        console.error('Error al listar todas las cuentas:', error);
+        const parsedMessage = parseOracleError(error);
+        const errorMessage = parsedMessage || error.message || 'Error desconocido';
         
         if (error.errorNum) {
-            response500(res, `Error de base de datos: ${error.message}`);
+            response500(res, `Error de base de datos: ${errorMessage}`);
             return;
         }
         
-        response500(res, "Error al obtener la lista de cuentas");
+        response500(res, `Error al obtener la lista de cuentas: ${errorMessage}`);
         
     } finally {
         await closeConnection(connection);

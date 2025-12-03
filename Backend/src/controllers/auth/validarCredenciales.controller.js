@@ -12,7 +12,6 @@ export const validarCredencialesController = async (req, res) => {
         
         await validarCredenciales(res, usuario, password);
     } catch (error) {
-        console.error('Error en validarCredencialesController:', error);
         response500(res, 'Error al validar credenciales');
     }
 };

@@ -3,8 +3,8 @@
     :class="[
       'bg-white shadow-lg transition-all duration-300 ease-in-out',
       isOpen ? 'w-64' : 'w-20',
-      'fixed md:static h-screen z-30',
-      'transform md:transform-none',
+      'fixed h-screen z-30',
+      'transform',
       isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
     ]"
   >

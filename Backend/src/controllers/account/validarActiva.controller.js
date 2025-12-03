@@ -14,7 +14,6 @@ export const validarCuentaActivaController = async (req, res) => {
         
         await validarCuentaActiva(res, cuentaId);
     } catch (error) {
-        console.error('Error en validarCuentaActivaController:', error);
         response500(res, 'Error al validar cuenta activa');
     }
 };

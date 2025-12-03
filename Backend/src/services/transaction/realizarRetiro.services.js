@@ -69,8 +69,6 @@ export const realizarRetiro = async (res, cuentaId, monto, usuarioId) => {
         response200(res, retiroData, "Retiro realizado exitosamente");
         
     } catch (error) {
-        console.error('Error al realizar retiro:', error);
-        
         if (error.errorNum) {
             const errorNum = Math.abs(error.errorNum);
             
