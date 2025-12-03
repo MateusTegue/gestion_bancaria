@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import { useAuth } from '../composables/useAuth';
+import { hasAccessToRoute, getRedirectPathByRole } from '../utils/roles';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -13,13 +14,13 @@ const routes: RouteRecordRaw[] = [
     path: '/clientes',
     name: 'clientes',
     component: () => import('../views/ClientesView.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowedRoles: [1] }, // Solo ADMON
   },
   {
     path: '/clientes/nuevo',
     name: 'cliente-nuevo',
     component: () => import('../views/ClienteFormView.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowedRoles: [1] }, // Solo ADMON
   },
   {
     path: '/clientes/:id',
@@ -31,7 +32,7 @@ const routes: RouteRecordRaw[] = [
     path: '/clientes/:id/editar',
     name: 'cliente-editar',
     component: () => import('../views/ClienteFormView.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowedRoles: [1] }, // Solo ADMON
   },
   {
     path: '/cuentas',
@@ -49,6 +50,12 @@ const routes: RouteRecordRaw[] = [
     path: '/transacciones',
     name: 'transacciones',
     component: () => import('../views/TransaccionesView.vue'),
+    meta: { requiresAuth: true, allowedRoles: [1, 2, 3] }, // ADMON, ANALISTA y CLIENTE
+  },
+  {
+    path: '/perfil',
+    name: 'perfil',
+    component: () => import('../views/PerfilView.vue'),
     meta: { requiresAuth: true },
   },
 ];
@@ -60,7 +67,7 @@ const router = createRouter({
 
 // Guard de navegación
 router.beforeEach((to, from, next) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, usuario } = useAuth();
   
   // Si la ruta requiere autenticación y el usuario no está autenticado
   if (to.meta.requiresAuth && !isAuthenticated.value) {
@@ -69,15 +76,32 @@ router.beforeEach((to, from, next) => {
       path: '/login',
       query: { redirect: to.fullPath },
     });
-  } 
-  // Si el usuario está autenticado y trata de ir al login
-  else if (to.path === '/login' && isAuthenticated.value) {
-    // Redirigir al home
-    next('/');
-  } 
-  else {
-    next();
+    return;
   }
+  
+  // Si el usuario está autenticado y trata de ir al login
+  if (to.path === '/login' && isAuthenticated.value) {
+    // Redirigir según el rol
+    const redirectTo = getRedirectPathByRole(usuario.value?.rolId || 1);
+    next(redirectTo);
+    return;
+  }
+  
+  // Verificar permisos de rol si la ruta tiene restricciones
+  if (to.meta.requiresAuth && to.meta.allowedRoles && usuario.value) {
+    const allowedRoles = to.meta.allowedRoles as number[];
+    if (!allowedRoles.includes(usuario.value.rolId)) {
+      // Verificar si tiene acceso usando la función de utilidad
+      if (!hasAccessToRoute(usuario.value.rolId, to.name as string)) {
+        // Redirigir a una ruta permitida según el rol
+        const redirectTo = getRedirectPathByRole(usuario.value.rolId);
+        next(redirectTo);
+        return;
+      }
+    }
+  }
+  
+  next();
 });
 
 export default router;

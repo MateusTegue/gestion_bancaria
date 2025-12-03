@@ -33,14 +33,17 @@ export const validarCredenciales = async (res, usuario, password) => {
             return;
         }
         
-        // Obtener información del usuario
+        // Obtener información del usuario con el nombre del rol y clienteId
         const userResult = await connection.execute(
             `SELECT 
-                USUARIO_ID,
-                USUARIO,
-                ROL_ID
-            FROM PROYECTODB.TBL_USUARIOS
-            WHERE USUARIO_ID = :usuario_id`,
+                u.USUARIO_ID,
+                u.USUARIO,
+                u.ROL_ID,
+                r.NOMBRE as ROL_NOMBRE,
+                u.CLIENTE_ID
+            FROM PROYECTODB.TBL_USUARIOS u
+            INNER JOIN PROYECTODB.TBL_ROLES r ON u.ROL_ID = r.ROL_ID
+            WHERE u.USUARIO_ID = :usuario_id`,
             {
                 usuario_id: usuarioId
             }
@@ -55,7 +58,9 @@ export const validarCredenciales = async (res, usuario, password) => {
         const usuarioData = {
             usuarioId: row[0],
             usuario: row[1],
-            rolId: row[2]
+            rolId: row[2],
+            rolNombre: row[3],
+            clienteId: row[4] || null
         };
         
         response200(res, usuarioData, "Autenticación exitosa");

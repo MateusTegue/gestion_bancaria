@@ -26,8 +26,48 @@
         </Button>
       </div>
 
+      <!-- Historial del Usuario Autenticado -->
       <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">Consultar Historial</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-gray-800">Mi Historial de Transacciones</h2>
+          <div class="flex items-center gap-2 items-end">
+            <Input
+              id="fechaInicioUsuario"
+              v-model="historialUsuarioForm.fechaInicio"
+              label="Fecha Inicio (Opcional)"
+              type="date"
+              class="w-40"
+            />
+            <Input
+              id="fechaFinUsuario"
+              v-model="historialUsuarioForm.fechaFin"
+              label="Fecha Fin (Opcional)"
+              type="date"
+              class="w-40"
+            />
+            <Button 
+              variant="primary" 
+              @click="handleCargarHistorialUsuario" 
+              :disabled="loadingHistorialUsuario"
+              class="ml-2"
+            >
+              {{ loadingHistorialUsuario ? 'Cargando...' : 'Filtrar' }}
+            </Button>
+            <Button 
+              variant="secondary" 
+              @click="handleLimpiarFiltros" 
+              :disabled="loadingHistorialUsuario"
+              class="ml-2"
+            >
+              Ver Todas
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consultar Historial por Cuenta (Solo para ADMON y ANALISTA) -->
+      <div v-if="isAdmin || isAnalista" class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Consultar Historial por Cuenta</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Input
             id="historialCuentaId"
@@ -58,16 +98,82 @@
         </div>
       </div>
 
-      <div v-if="loadingHistorial" class="text-center py-12">
+      <!-- Tabla de Historial del Usuario -->
+      <div v-if="loadingHistorialUsuario" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         <p class="mt-4 text-gray-600">Cargando historial...</p>
       </div>
 
-      <div v-else-if="historialError" class="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
-        <p class="text-red-800">{{ historialError }}</p>
+      <div v-else-if="historialUsuario.length > 0" class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">Mis Transacciones</h3>
+        </div>
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                ID Transacción
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Cuenta
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tipo
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Monto
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Fecha
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr v-for="transaccion in historialUsuario" :key="transaccion.transaccionId">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ transaccion.transaccionId }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ transaccion.cuentaId }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <span
+                  :class="{
+                    'bg-green-100 text-green-800': transaccion.tipoTransaccion === 'Ingreso',
+                    'bg-red-100 text-red-800': transaccion.tipoTransaccion === 'Retiro',
+                  }"
+                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                >
+                  {{ transaccion.tipoTransaccion }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                ${{ transaccion.monto.toLocaleString() }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ formatDate(transaccion.fechaTransaccion) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      <div v-else-if="historial.length > 0" class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div v-else-if="historialUsuarioConsultado && historialUsuario.length === 0" class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6">
+        <p class="text-yellow-800">No se encontraron transacciones</p>
+      </div>
+
+      <!-- Tabla de Historial por Cuenta (Solo para ADMON y ANALISTA) -->
+      <div v-if="isAdmin || isAnalista">
+        <div v-if="loadingHistorial" class="text-center py-12">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p class="mt-4 text-gray-600">Cargando historial...</p>
+        </div>
+
+        <div v-else-if="historialError" class="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
+          <p class="text-red-800">{{ historialError }}</p>
+        </div>
+
+        <div v-else-if="historial.length > 0" class="bg-white rounded-lg shadow-md overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
@@ -118,8 +224,9 @@
         </table>
       </div>
 
-      <div v-else-if="historialConsultado && historial.length === 0" class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-        <p class="text-yellow-800">No se encontraron transacciones en el rango de fechas especificado</p>
+        <div v-else-if="historialConsultado && historial.length === 0" class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <p class="text-yellow-800">No se encontraron transacciones en el rango de fechas especificado</p>
+        </div>
       </div>
 
       <DepositoModal
@@ -147,7 +254,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import Layout from '../components/Layout.vue';
 import Button from '../components/Button.vue';
 import Input from '../components/Input.vue';
@@ -156,21 +263,31 @@ import RetiroModal from './transacciones/RetiroModal.vue';
 import TransferenciaModal from './transacciones/TransferenciaModal.vue';
 import { transactionService } from '../services/transactionService';
 import { useToast } from '../composables/useToast';
+import { useAuth } from '../composables/useAuth';
 import type { HistorialTransaccion } from '../types';
 
 const { success, error: showError } = useToast();
+const { usuario, isAdmin, isAnalista } = useAuth();
 
 const showDepositoModal = ref(false);
 const showRetiroModal = ref(false);
 const showTransferenciaModal = ref(false);
 const submitting = ref(false);
 const loadingHistorial = ref(false);
+const loadingHistorialUsuario = ref(false);
 const historialError = ref('');
 const historial = ref<HistorialTransaccion[]>([]);
+const historialUsuario = ref<HistorialTransaccion[]>([]);
 const historialConsultado = ref(false);
+const historialUsuarioConsultado = ref(false);
 
 const historialForm = ref({
   cuentaId: '',
+  fechaInicio: '',
+  fechaFin: '',
+});
+
+const historialUsuarioForm = ref({
   fechaInicio: '',
   fechaFin: '',
 });
@@ -351,6 +468,47 @@ const handleConsultarHistorial = async () => {
   }
 };
 
+const handleCargarHistorialUsuario = async () => {
+  if (!usuario.value?.usuarioId) {
+    showError('Usuario no autenticado');
+    return;
+  }
+
+  loadingHistorialUsuario.value = true;
+  historialUsuarioConsultado.value = false;
+
+  try {
+    // Solo enviar fechas si ambas están presentes
+    const fechaInicio = historialUsuarioForm.value.fechaInicio || undefined;
+    const fechaFin = historialUsuarioForm.value.fechaFin || undefined;
+    
+    const transacciones = await transactionService.listarHistorialUsuario(
+      usuario.value.usuarioId,
+      fechaInicio,
+      fechaFin
+    );
+    historialUsuario.value = transacciones;
+    historialUsuarioConsultado.value = true;
+    if (transacciones.length > 0) {
+      success(`Se encontraron ${transacciones.length} transacción(es)`);
+    } else {
+      success('No se encontraron transacciones');
+    }
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Error al cargar historial';
+    historialUsuario.value = [];
+    showError(errorMessage);
+  } finally {
+    loadingHistorialUsuario.value = false;
+  }
+};
+
+const handleLimpiarFiltros = () => {
+  historialUsuarioForm.value.fechaInicio = '';
+  historialUsuarioForm.value.fechaFin = '';
+  handleCargarHistorialUsuario();
+};
+
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
   return date.toLocaleString('es-ES', {
@@ -361,5 +519,13 @@ const formatDate = (dateString: string): string => {
     minute: '2-digit',
   });
 };
+
+// Cargar historial automáticamente al montar el componente
+onMounted(() => {
+  if (usuario.value?.usuarioId) {
+    // Cargar todas las transacciones sin filtro de fechas por defecto
+    handleCargarHistorialUsuario();
+  }
+});
 </script>
 

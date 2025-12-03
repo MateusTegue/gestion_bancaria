@@ -63,6 +63,7 @@ import Button from '../components/Button.vue';
 import { authService } from '../services/authService';
 import { useToast } from '../composables/useToast';
 import { useAuth } from '../composables/useAuth';
+import { getRedirectPathByRole } from '../utils/roles';
 
 const router = useRouter();
 const route = useRoute();
@@ -106,8 +107,9 @@ const handleLogin = async () => {
     
     success('Inicio de sesión exitoso');
     
-    // Redirigir a la ruta original si existe, o al home
-    const redirectTo = (route.query.redirect as string) || '/';
+    // Redirigir según el rol del usuario
+    const redirectQuery = route.query.redirect as string | undefined;
+    const redirectTo = getRedirectPathByRole(usuario.rolId, redirectQuery);
     router.push(redirectTo);
   } catch (err: any) {
     let errorMessage = 'Error al iniciar sesión';

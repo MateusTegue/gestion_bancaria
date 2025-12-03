@@ -64,6 +64,12 @@ export const cuentaService = {
     return data.map(mapCuentaFromBackend);
   },
 
+  async listAll(): Promise<Cuenta[]> {
+    const response = await api.get<ApiResponse<CuentaBackend[]>>('/cuentas');
+    const data = response.data.data || [];
+    return data.map(mapCuentaFromBackend);
+  },
+
   async changeEstado(cuentaId: number | string, nuevoEstado: string): Promise<Cuenta> {
     // Convertir la descripción del estado a su ID numérico
     const estadoId = getEstadoCuentaId(nuevoEstado);

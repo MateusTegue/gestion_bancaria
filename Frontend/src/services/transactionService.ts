@@ -60,5 +60,22 @@ export const transactionService = {
     );
     return response.data.data || [];
   },
+
+  async listarHistorialUsuario(
+    usuarioId: number,
+    fechaInicio?: string,
+    fechaFin?: string
+  ): Promise<HistorialTransaccion[]> {
+    const params: Record<string, string> = {};
+    if (fechaInicio) params.fechaInicio = fechaInicio;
+    if (fechaFin) params.fechaFin = fechaFin;
+
+    const response = await api.post<ApiResponse<HistorialTransaccion[]>>(
+      '/transacciones/historial-usuario',
+      { usuarioId },
+      { params }
+    );
+    return response.data.data || [];
+  },
 };
 

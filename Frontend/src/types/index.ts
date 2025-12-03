@@ -49,6 +49,8 @@ export interface Usuario {
   usuarioId: number;
   usuario: string;
   rolId: number;
+  rolNombre?: string;
+  clienteId?: string | number | null;
 }
 
 export interface DepositoData {

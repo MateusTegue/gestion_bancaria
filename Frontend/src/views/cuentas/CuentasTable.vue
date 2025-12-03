@@ -62,7 +62,7 @@
               Ver Saldo
             </button>
             <button
-              v-if="cuenta.id || cuenta.numeroCuenta"
+              v-if="(cuenta.id || cuenta.numeroCuenta) && canChangeState"
               class="text-indigo-600 hover:text-indigo-900"
               @click="handleCambiarEstado(cuenta)"
             >
@@ -80,9 +80,12 @@ import type { Cuenta } from '../../types';
 
 interface Props {
   cuentas: Cuenta[];
+  canChangeState?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  canChangeState: true,
+});
 
 const emit = defineEmits<{
   consultarSaldo: [cuentaId: number | string];
