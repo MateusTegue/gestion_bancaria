@@ -34,8 +34,6 @@ export const consultarSaldo = async (res, cuentaId) => {
         response200(res, { saldo }, "Saldo consultado exitosamente");
         
     } catch (error) {
-        console.error('Error al consultar saldo:', error);
-        
         if (error.errorNum) {
             const errorMessage = error.message || 'Error de base de datos';
             

@@ -29,8 +29,6 @@ export const validarCuentaActiva = async (res, cuentaId) => {
         response200(res, { activa: esActiva }, "Validación realizada exitosamente");
         
     } catch (error) {
-        console.error('Error al validar cuenta activa:', error);
-        
         if (error.errorNum) {
             response500(res, `Error de base de datos: ${error.message}`);
             return;

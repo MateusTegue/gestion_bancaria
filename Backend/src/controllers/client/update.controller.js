@@ -23,7 +23,6 @@ export const updateClientController = async (req, res) => {
         
         await updateClient(res, clienteId, clientData);
     } catch (error) {
-        console.error('Error en updateClientController:', error);
         response500(res, 'Error al actualizar el cliente');
     }
 };

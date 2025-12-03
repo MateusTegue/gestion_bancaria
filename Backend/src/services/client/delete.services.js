@@ -37,8 +37,6 @@ export const deleteClient = async (res, clienteId, usuarioId) => {
         response200(res, { clienteId }, "Cliente eliminado exitosamente");
         
     } catch (error) {
-        console.error('Error al eliminar cliente:', error);
-        
         if (error.errorNum) {
             const errorMessage = error.message || 'Error de base de datos';
             

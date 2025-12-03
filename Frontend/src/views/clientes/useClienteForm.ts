@@ -1,11 +1,13 @@
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { clienteService } from '../../services/clienteService';
+import { useToast } from '../../composables/useToast';
 import type { ClienteFormData } from '../../types';
 
 export const useClienteForm = () => {
   const route = useRoute();
   const router = useRouter();
+  const { success, error: showError } = useToast();
 
   const isEdit = computed(() => !!route.params.id);
   const clienteId = computed(() => (route.params.id as string) || '');
@@ -37,7 +39,6 @@ export const useClienteForm = () => {
         direccion: cliente.direccion || '',
       };
     } catch (err) {
-      console.error('Error al cargar cliente:', err);
     } finally {
       loading.value = false;
     }
@@ -47,9 +48,11 @@ export const useClienteForm = () => {
     submitting.value = true;
     try {
       await clienteService.create(data);
+      success('Cliente creado exitosamente');
       router.push('/clientes');
     } catch (err) {
-      console.error('Error al crear cliente:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Error al crear cliente';
+      showError(errorMessage);
     } finally {
       submitting.value = false;
     }
@@ -59,9 +62,11 @@ export const useClienteForm = () => {
     submitting.value = true;
     try {
       await clienteService.update(Number(clienteId.value), data);
+      success('Cliente actualizado exitosamente');
       router.push('/clientes');
     } catch (err) {
-      console.error('Error al actualizar cliente:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Error al actualizar cliente';
+      showError(errorMessage);
     } finally {
       submitting.value = false;
     }

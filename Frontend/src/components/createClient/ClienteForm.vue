@@ -1,77 +1,34 @@
 <template>
   <form @submit.prevent="handleSubmit" class="bg-white shadow-md rounded-lg p-6">
-    <Input
-      id="identificacion"
-      v-model="form.identificacion"
-      label="Identificación"
-      placeholder="Ingrese la identificación"
-      required
-      :error="errors.identificacion"
+    <ClienteFormFields
+      :form-data="form"
+      :errors="errors"
     />
 
-    <Input
-      id="primerNombre"
-      v-model="form.primerNombre"
-      label="Primer Nombre"
-      placeholder="Ingrese el primer nombre"
-      required
-      :error="errors.primerNombre"
-    />
+    <ClienteFormError :error="submitError" />
 
-    <Input
-      id="segundoNombre"
-      v-model="form.segundoNombre"
-      label="Segundo Nombre"
-      placeholder="Ingrese el segundo nombre (opcional)"
-      :error="errors.segundoNombre"
-    />
-
-    <Input
-      id="primerApellido"
-      v-model="form.primerApellido"
-      label="Primer Apellido"
-      placeholder="Ingrese el primer apellido"
-      required
-      :error="errors.primerApellido"
-    />
-
-    <Input
-      id="segundoApellido"
-      v-model="form.segundoApellido"
-      label="Segundo Apellido"
-      placeholder="Ingrese el segundo apellido (opcional)"
-      :error="errors.segundoApellido"
-    />
-
-    <Input
-      id="direccion"
-      v-model="form.direccion"
-      label="Dirección"
-      placeholder="Ingrese la dirección"
-      :error="errors.direccion"
-    />
-
-    <div v-if="submitError" class="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
-      <p class="text-red-800">{{ submitError }}</p>
-    </div>
-
-    <div class="flex justify-end space-x-4">
-      <slot name="cancel">
-        <Button type="button" variant="secondary" @click="handleCancel">
-          Cancelar
-        </Button>
-      </slot>
-      <Button type="submit" :disabled="submitting">
-        {{ submitting ? 'Guardando...' : submitLabel }}
-      </Button>
-    </div>
+    <ClienteFormActions
+      :submitting="submitting"
+      :submit-label="submitLabel"
+      @cancel="handleCancel"
+    >
+      <template #cancel>
+        <slot name="cancel">
+          <Button type="button" variant="secondary" @click="handleCancel">
+            Cancelar
+          </Button>
+        </slot>
+      </template>
+    </ClienteFormActions>
   </form>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import Input from '../Input.vue';
 import Button from '../Button.vue';
+import ClienteFormFields from './ClienteFormFields.vue';
+import ClienteFormError from './ClienteFormError.vue';
+import ClienteFormActions from './ClienteFormActions.vue';
 import type { ClienteFormData } from '../../types';
 
 interface Props {

@@ -2,6 +2,7 @@ import oracledb from 'oracledb';
 import { connectDB } from '../../database/conexiondb.js';
 import { response200, response400, response500 } from '../../utils/responses.js';
 import { closeConnection } from '../../utils/closeConnection.js';
+import { getEstadoCuentaDescripcion, getTipoCuentaDescripcion } from '../../utils/tipoParametros.js';
 
 export const listAccountsByCliente = async (res, clienteId) => {
     let connection = null;
@@ -29,11 +30,16 @@ export const listAccountsByCliente = async (res, clienteId) => {
         const cuentas = [];
         let row;
         while ((row = await resultSet.getRow())) {
+            const tipoCuentaId = row[1];
+            const estadoId = row[2];
+            
             cuentas.push({
                 cuentaId: row[0],
                 clienteId: clienteId,
-                tipoCuentaId: row[1],
-                estadoId: row[2],
+                tipoCuentaId: tipoCuentaId,
+                tipoCuenta: getTipoCuentaDescripcion(tipoCuentaId),
+                estadoId: estadoId,
+                estado: getEstadoCuentaDescripcion(estadoId),
                 saldo: row[3]
             });
         }
@@ -46,8 +52,6 @@ export const listAccountsByCliente = async (res, clienteId) => {
         response200(res, cuentas, message);
         
     } catch (error) {
-        console.error('Error al listar cuentas del cliente:', error);
-        
         if (error.errorNum) {
             response500(res, `Error de base de datos: ${error.message}`);
             return;

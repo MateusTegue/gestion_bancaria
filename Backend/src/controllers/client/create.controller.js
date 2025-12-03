@@ -22,7 +22,6 @@ export const createClientController = async (req, res) => {
         
         await createClient(res, clientData);
     } catch (error) {
-        console.error('Error en createClientController:', error);
         response500(res, "Error al crear cliente");
     }
 };  

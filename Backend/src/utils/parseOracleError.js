@@ -1,6 +1,16 @@
 export const parseOracleError = (error) => {
     const errorMessage = error.message || '';
     
+    const errorNum = error.errorNum ? Math.abs(error.errorNum) : null;
+    
+    if (errorNum === 20002) {
+        const cuentaMatch = errorMessage.match(/cuenta\s+([A-Z0-9_]+)/i);
+        if (cuentaMatch) {
+            return `Fondos insuficientes en la cuenta ${cuentaMatch[1]}. Por favor, verifique el saldo disponible.`;
+        }
+        return 'Fondos insuficientes en la cuenta. Por favor, verifique el saldo disponible.';
+    }
+    
     if (errorMessage.includes('ORA-00001')) {
         if (errorMessage.includes('PK_CUENTA_ID') || errorMessage.includes('CUENTA_ID') || errorMessage.includes('cuenta')) {
             return 'La cuenta con este ID ya existe en el sistema';

@@ -8,11 +8,22 @@ import searchByIdentificacionRoutes from './client/searchByIdentificacion.route.
 
 import createAccountRoutes from './account/create.route.js';
 import listByClienteAccountRoutes from './account/listByCliente.route.js';
+import listAllAccountRoutes from './account/listAll.route.js';
 import changeEstadoAccountRoutes from './account/changeEstado.route.js';
 import consultarSaldoAccountRoutes from './account/consultarSaldo.route.js';
 import validarActivaAccountRoutes from './account/validarActiva.route.js';
 
+import loginRoutes from './auth/login.route.js';
+
+import realizarDepositoRoutes from './transaction/realizarDeposito.route.js';
+import realizarRetiroRoutes from './transaction/realizarRetiro.route.js';
+import realizarTransferenciaRoutes from './transaction/realizarTransferencia.route.js';
+import generarHistorialRoutes from './transaction/generarHistorial.route.js';
+import listarHistorialUsuarioRoutes from './transaction/listarHistorialUsuario.route.js';
+
 const router = Router();
+
+router.use('/api/auth', loginRoutes);
 
 router.use('/api/clientes', listAllRoutes);
 router.use('/api/clientes', createRoutes);
@@ -23,8 +34,15 @@ router.use('/api/clientes', searchByIdentificacionRoutes);
 
 router.use('/api/cuentas', createAccountRoutes);
 router.use('/api/cuentas', listByClienteAccountRoutes);
+router.use('/api/cuentas', listAllAccountRoutes);
 router.use('/api/cuentas', changeEstadoAccountRoutes);
 router.use('/api/cuentas', consultarSaldoAccountRoutes);
 router.use('/api/cuentas', validarActivaAccountRoutes);
+
+router.use('/api/transacciones/deposito', realizarDepositoRoutes);
+router.use('/api/transacciones/retiro', realizarRetiroRoutes);
+router.use('/api/transacciones/transferencia', realizarTransferenciaRoutes);
+router.use('/api/transacciones', generarHistorialRoutes);
+router.use('/api/transacciones', listarHistorialUsuarioRoutes);
 
 export default router;

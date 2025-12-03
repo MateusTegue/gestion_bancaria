@@ -49,9 +49,16 @@ export const getClientById = async (res, clienteId) => {
         response200(res, cliente, "Cliente encontrado exitosamente");
         
     } catch (error) {
-        console.error('Error al obtener cliente:', error);
-        
         if (error.errorNum) {
+            if (error.errorNum === -20003) {
+                response404(res, "Cliente no encontrado");
+                return;
+            }
+            response500(res, `Error de base de datos: ${error.message}`);
+            return;
+        }
+        
+        if (error.message && error.message.includes('ORA-')) {
             response500(res, `Error de base de datos: ${error.message}`);
             return;
         }

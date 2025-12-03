@@ -45,7 +45,9 @@
             <span
               :class="[
                 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                cuenta.estado === 'ACTIVA' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
+                cuenta.estado === 'Activo' ? 'bg-green-100 text-green-800' : 
+                cuenta.estado === 'Inactivo' || cuenta.estado === 'Cancelado' ? 'bg-red-100 text-red-800' :
+                cuenta.estado === 'Bloqueado' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800',
               ]"
             >
               {{ cuenta.estado || 'N/A' }}
@@ -53,18 +55,18 @@
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
             <button
-              v-if="cuenta.id"
+              v-if="cuenta.id || cuenta.numeroCuenta"
               class="text-blue-600 hover:text-blue-900 mr-4"
-              @click="handleConsultarSaldo(cuenta.id)"
+              @click="handleConsultarSaldo(cuenta.id || cuenta.numeroCuenta || '')"
             >
               Ver Saldo
             </button>
             <button
-              v-if="cuenta.id"
+              v-if="(cuenta.id || cuenta.numeroCuenta) && canChangeState"
               class="text-indigo-600 hover:text-indigo-900"
               @click="handleCambiarEstado(cuenta)"
             >
-              {{ cuenta.estado === 'ACTIVA' ? 'Desactivar' : 'Activar' }}
+              {{ cuenta.estado === 'Activo' ? 'Desactivar' : 'Activar' }}
             </button>
           </td>
         </tr>
@@ -78,16 +80,19 @@ import type { Cuenta } from '../../types';
 
 interface Props {
   cuentas: Cuenta[];
+  canChangeState?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  canChangeState: true,
+});
 
 const emit = defineEmits<{
-  consultarSaldo: [cuentaId: number];
+  consultarSaldo: [cuentaId: number | string];
   cambiarEstado: [cuenta: Cuenta];
 }>();
 
-const handleConsultarSaldo = (cuentaId: number) => {
+const handleConsultarSaldo = (cuentaId: number | string) => {
   emit('consultarSaldo', cuentaId);
 };
 

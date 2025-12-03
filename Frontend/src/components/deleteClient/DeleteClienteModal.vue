@@ -5,36 +5,22 @@
     @close="handleClose"
     @confirm="handleConfirm"
   >
-    <p>
-      ¿Estás seguro de que deseas eliminar al cliente
-      <strong>{{ cliente?.nombre }} {{ cliente?.apellido }}</strong>?
-    </p>
-    <p class="mt-2 text-sm text-gray-500">
-      Esta acción no se puede deshacer.
-    </p>
+    <DeleteClienteModalContent :cliente="cliente" />
+    
     <template #footer>
-      <Button
-        variant="danger"
-        class="w-full sm:w-auto sm:ml-3"
-        :disabled="deleting"
-        @click="handleConfirm"
-      >
-        {{ deleting ? 'Eliminando...' : 'Eliminar' }}
-      </Button>
-      <Button
-        variant="secondary"
-        class="mt-3 w-full sm:mt-0 sm:w-auto"
-        @click="handleClose"
-      >
-        Cancelar
-      </Button>
+      <DeleteClienteModalActions
+        :deleting="deleting"
+        @close="handleClose"
+        @confirm="handleConfirm"
+      />
     </template>
   </Modal>
 </template>
 
 <script setup lang="ts">
 import Modal from '../Modal.vue';
-import Button from '../Button.vue';
+import DeleteClienteModalContent from './DeleteClienteModalContent.vue';
+import DeleteClienteModalActions from './DeleteClienteModalActions.vue';
 import type { Cliente } from '../../types';
 
 interface Props {
