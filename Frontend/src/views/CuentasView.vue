@@ -126,8 +126,26 @@ const handleCreateCuenta = async (data: Omit<Cuenta, 'id'>) => {
     if (clienteIdFilter.value) {
       await loadCuentas(Number(clienteIdFilter.value));
     }
-  } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Error al crear cuenta';
+  } catch (err: any) {
+    let errorMessage = 'Error al crear cuenta';
+    if (err.response && err.response.data) {
+      errorMessage = err.response.data.message || err.response.data.error || errorMessage;
+    } else if (err instanceof Error) {
+      errorMessage = err.message;
+    }
+    // Limpiar mensajes de error de Oracle que contengan trazas técnicas
+    if (errorMessage.includes('ORA-') || errorMessage.includes('ORA-06512')) {
+      const lines = errorMessage.split('\n');
+      const usefulLines = lines.filter(line =>
+        !line.includes('ORA-06512') &&
+        !line.includes('Help:') &&
+        !line.trim().startsWith('ORA-') &&
+        line.trim().length > 0
+      );
+      if (usefulLines.length > 0) {
+        errorMessage = usefulLines[0].trim();
+      }
+    }
     error.value = errorMessage;
     showError(errorMessage);
   } finally {
@@ -135,7 +153,7 @@ const handleCreateCuenta = async (data: Omit<Cuenta, 'id'>) => {
   }
 };
 
-const handleConsultarSaldo = async (cuentaId: number) => {
+const handleConsultarSaldo = async (cuentaId: number | string) => {
   try {
     saldoActual.value = await cuentaService.consultarSaldo(cuentaId);
     showSaldoModal.value = true;
@@ -150,7 +168,8 @@ const handleConsultarSaldo = async (cuentaId: number) => {
 const handleCambiarEstado = async (cuenta: Cuenta) => {
   if (!cuenta.id) return;
 
-  const nuevoEstado = cuenta.estado === 'ACTIVA' ? 'INACTIVA' : 'ACTIVA';
+  // Cambiar entre Activo e Inactivo
+  const nuevoEstado = cuenta.estado === 'Activo' ? 'Inactivo' : 'Activo';
   try {
     await cuentaService.changeEstado(cuenta.id, nuevoEstado);
     success(`Estado de cuenta cambiado a ${nuevoEstado}`);

@@ -31,7 +31,38 @@
               >
                 Cuentas
               </RouterLink>
+              <RouterLink
+                to="/transacciones"
+                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                active-class="border-blue-500 text-gray-900"
+              >
+                Transacciones
+              </RouterLink>
             </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <div v-if="usuario" class="flex items-center space-x-3">
+              <div class="text-right hidden sm:block">
+                <p class="text-sm font-medium text-gray-900">{{ usuario.usuario }}</p>
+                <p class="text-xs text-gray-500">
+                  {{ usuario.rolId === 1 ? 'Administrador' : 'Usuario' }}
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                @click="handleLogout"
+                class="text-sm px-3 py-1.5"
+              >
+                Cerrar Sesión
+              </Button>
+            </div>
+            <RouterLink
+              v-else
+              to="/login"
+              class="text-gray-500 hover:text-gray-700 text-sm font-medium"
+            >
+              Iniciar Sesión
+            </RouterLink>
           </div>
         </div>
       </div>
@@ -44,6 +75,19 @@
 </template>
 
 <script setup lang="ts">
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
+import Button from './Button.vue';
+import { useAuth } from '../composables/useAuth';
+import { useToast } from '../composables/useToast';
+
+const router = useRouter();
+const { usuario, clearUsuario } = useAuth();
+const { success } = useToast();
+
+const handleLogout = () => {
+  clearUsuario();
+  success('Sesión cerrada exitosamente');
+  router.push('/login');
+};
 </script>
 

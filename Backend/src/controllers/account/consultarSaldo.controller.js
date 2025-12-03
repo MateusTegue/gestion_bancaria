@@ -5,14 +5,13 @@ export const consultarSaldoController = async (req, res) => {
     try {
         const { id } = req.params;
         
-        const cuentaId = Number(id);
-        
-        if (isNaN(cuentaId) || cuentaId <= 0) {
-            response400(res, 'ID de cuenta inválido');
+        if (!id || (typeof id === 'string' && id.trim() === '')) {
+            response400(res, 'ID de cuenta es requerido');
             return;
         }
         
-        await consultarSaldo(res, cuentaId);
+        // El cuentaId puede ser un string (ej: "CUENTA_0001") o un número
+        await consultarSaldo(res, id);
     } catch (error) {
         console.error('Error en consultarSaldoController:', error);
         response500(res, 'Error al consultar saldo');

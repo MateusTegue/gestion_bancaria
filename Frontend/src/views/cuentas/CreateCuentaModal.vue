@@ -5,14 +5,35 @@
     @close="handleClose"
     @confirm="handleConfirm"
   >
-    <Input
-      id="clienteId"
-      v-model="formData.clienteId"
-      label="ID del Cliente"
-      type="number"
-      required
-      :error="errors.clienteId"
-    />
+    <div class="mb-4">
+      <label for="clienteId" class="block text-sm font-medium text-gray-700 mb-1">
+        Cliente <span class="text-red-500">*</span>
+      </label>
+      <div v-if="loadingClientes" class="text-sm text-gray-500">
+        Cargando clientes...
+      </div>
+      <select
+        v-else
+        id="clienteId"
+        v-model="formData.clienteId"
+        :class="[
+          'w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500',
+          errors.clienteId ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300'
+        ]"
+        required
+      >
+        <option value="">Seleccione un cliente</option>
+        <option
+          v-for="cliente in clientes"
+          :key="cliente.id"
+          :value="cliente.id"
+        >
+          {{ cliente.id }} - {{ cliente.nombre }} {{ cliente.apellido }} ({{ cliente.identificacion }})
+        </option>
+      </select>
+      <p v-if="errors.clienteId" class="mt-1 text-sm text-red-600">{{ errors.clienteId }}</p>
+      <p v-if="errorClientes" class="mt-1 text-sm text-red-600">{{ errorClientes }}</p>
+    </div>
     <Input
       id="numeroCuenta"
       v-model="formData.numeroCuenta"
@@ -20,19 +41,21 @@
       required
       :error="errors.numeroCuenta"
     />
-    <Input
-      id="tipoCuenta"
-      v-model="formData.tipoCuenta"
-      label="Tipo de Cuenta"
-      placeholder="Ej: Ahorros, Corriente"
-    />
-    <Input
-      id="saldo"
-      v-model="formData.saldo"
-      label="Saldo Inicial"
-      type="number"
-      :error="errors.saldo"
-    />
+    <div class="mb-4">
+      <label for="tipoCuenta" class="block text-sm font-medium text-gray-700 mb-1">
+        Tipo de Cuenta
+      </label>
+      <select
+        id="tipoCuenta"
+        v-model="formData.tipoCuenta"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+      >
+        <option value="">Seleccione un tipo</option>
+        <option value="Ahorro">Ahorro</option>
+        <option value="Corriente">Corriente</option>
+      </select>
+      <p v-if="errors.tipoCuenta" class="mt-1 text-sm text-red-600">{{ errors.tipoCuenta }}</p>
+    </div>
     <template #footer>
       <Button
         variant="primary"
@@ -54,11 +77,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import Modal from '../../components/Modal.vue';
 import Button from '../../components/Button.vue';
 import Input from '../../components/Input.vue';
-import type { Cuenta } from '../../types';
+import { clienteService } from '../../services/clienteService';
+import type { Cuenta, Cliente } from '../../types';
 
 interface Props {
   show: boolean;
@@ -80,11 +104,29 @@ const formData = ref<Omit<Cuenta, 'id'>>({
   clienteId: props.initialClienteId,
   numeroCuenta: '',
   tipoCuenta: '',
-  saldo: 0,
-  estado: 'ACTIVA',
+  saldo: 0, // Valor por defecto, no se muestra en el formulario
+  estado: 'Activo',
 });
 
 const errors = ref<Partial<Record<keyof Cuenta, string>>>({});
+const clientes = ref<Cliente[]>([]);
+const loadingClientes = ref(false);
+const errorClientes = ref('');
+
+const loadClientes = async () => {
+  if (clientes.value.length > 0) return; // Ya están cargados
+  
+  loadingClientes.value = true;
+  errorClientes.value = '';
+  try {
+    clientes.value = await clienteService.listAll();
+  } catch (err) {
+    errorClientes.value = err instanceof Error ? err.message : 'Error al cargar clientes';
+    clientes.value = [];
+  } finally {
+    loadingClientes.value = false;
+  }
+};
 
 watch(() => props.show, (newValue) => {
   if (newValue) {
@@ -92,10 +134,19 @@ watch(() => props.show, (newValue) => {
       clienteId: props.initialClienteId,
       numeroCuenta: '',
       tipoCuenta: '',
-      saldo: 0,
-      estado: 'ACTIVA',
+      saldo: 0, // Valor por defecto
+      estado: 'Activo',
     };
     errors.value = {};
+    // Cargar clientes cuando se abre el modal
+    loadClientes();
+  }
+});
+
+onMounted(() => {
+  // Cargar clientes al montar el componente
+  if (props.show) {
+    loadClientes();
   }
 });
 
@@ -112,10 +163,6 @@ const validateForm = (): boolean => {
 
   if (!formData.value.numeroCuenta?.trim()) {
     errors.value.numeroCuenta = 'El número de cuenta es requerido';
-  }
-
-  if (formData.value.saldo === undefined || formData.value.saldo < 0) {
-    errors.value.saldo = 'El saldo debe ser mayor o igual a 0';
   }
 
   return Object.keys(errors.value).length === 0;

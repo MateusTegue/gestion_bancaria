@@ -45,3 +45,40 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
+export interface Usuario {
+  usuarioId: number;
+  usuario: string;
+  rolId: number;
+}
+
+export interface DepositoData {
+  cuentaId: string;
+  monto: number;
+  saldoActualizado: number;
+  fecha: string;
+}
+
+export interface RetiroData {
+  cuentaId: string;
+  monto: number;
+  saldoActualizado: number;
+  fecha: string;
+}
+
+export interface TransferenciaData {
+  cuentaOrigen: string;
+  cuentaDestino: string;
+  monto: number;
+  saldoOrigen: number;
+  saldoDestino: number;
+  fecha: string;
+}
+
+export interface HistorialTransaccion {
+  transaccionId: number;
+  cuentaId: string;
+  tipoTransaccion: string;
+  monto: number;
+  fechaTransaccion: string;
+}
+

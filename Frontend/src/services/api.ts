@@ -1,5 +1,4 @@
 import axios, { type AxiosError } from 'axios';
-import { useToast } from 'vue-toastification';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL 
@@ -15,14 +14,8 @@ api.interceptors.response.use(
     return response;
   },
   (error: AxiosError<{ message?: string; error?: string }>) => {
-    const toast = useToast();
-    const errorMessage = 
-      error.response?.data?.message || 
-      error.response?.data?.error || 
-      error.message || 
-      'Ha ocurrido un error inesperado';
-    
-    toast.error(errorMessage);
+    // No mostrar toast aquí - dejar que los componentes manejen los errores
+    // Esto evita mensajes duplicados
     return Promise.reject(error);
   }
 );
