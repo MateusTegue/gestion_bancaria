@@ -3,7 +3,8 @@ import { validarCuentaActivaController } from '../../controllers/account/validar
 
 const router = Router();
 
-router.get('/:id/Activo', validarCuentaActivaController);
+router.get('/:id/validar', validarCuentaActivaController);
+router.get('/:id/Activo', validarCuentaActivaController); // Mantener compatibilidad
 
 export default router;
 

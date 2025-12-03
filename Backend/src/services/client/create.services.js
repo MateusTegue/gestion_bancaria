@@ -8,7 +8,6 @@ export const createClient = async (res, clientData) => {
     let connection = null;
     
     try {
-        // Validar datos requeridos
         if (!clientData.clienteId || !clientData.primerNombre || !clientData.primerApellido || !clientData.identificacion) {
             response400(res, "Los campos clienteId, primerNombre, primerApellido e identificacion son obligatorios");
             return;
@@ -41,7 +40,6 @@ export const createClient = async (res, clientData) => {
 
         await connection.commit();
         
-        // Consultar el cliente creado para retornar todos sus datos
         const consultResult = await connection.execute(
             `BEGIN
                 gestion_clientes_pkg.consultar_cliente(:p_cliente_id, :cursor);
@@ -77,17 +75,12 @@ export const createClient = async (res, clientData) => {
         response201(res, clienteCreado, "Cliente creado exitosamente");
         
     } catch (error) {
-        console.error('Error al crear cliente:', error);
-        
-        // Manejar errores específicos de Oracle
         if (error.errorNum) {
-            // Errores conocidos del procedimiento almacenado
             if (error.errorNum === -20001) {
                 response400(res, "El cliente ya existe en el sistema");
                 return;
             }
             if (error.errorNum === -20002) {
-                // Error genérico del procedimiento, parsear para obtener mensaje claro
                 const parsedMessage = parseOracleError(error);
                 if (parsedMessage.includes('ya existe')) {
                     response400(res, parsedMessage);
@@ -105,13 +98,11 @@ export const createClient = async (res, clientData) => {
                 return;
             }
             
-            // Para otros errores, parsear el mensaje
             const parsedMessage = parseOracleError(error);
             response500(res, parsedMessage);
             return;
         }
         
-        // Si no es un error de Oracle conocido, parsear igualmente
         const parsedMessage = parseOracleError(error);
         response500(res, parsedMessage || "Error al crear cliente");
         

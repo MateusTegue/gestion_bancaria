@@ -42,7 +42,6 @@ export const updateClient = async (res, clienteId, clientData) => {
 
         await connection.commit();
         
-        // Consultar el cliente actualizado para retornar todos sus datos
         const consultResult = await connection.execute(
             `BEGIN
                 gestion_clientes_pkg.consultar_cliente(:p_cliente_id, :cursor);
@@ -63,23 +62,18 @@ export const updateClient = async (res, clienteId, clientData) => {
         }
         
         const clienteActualizado = {
-            clienteId: row[0],
-            primerNombre: row[1],
-            segundoNombre: row[2],
-            primerApellido: row[3],
-            segundoApellido: row[4],
-            nombreCompleto: row[5],
-            identificacion: row[6],
-            direccion: row[7],
-            totalCuentas: row[8],
-            saldoTotal: row[9]
+            id: row[0],
+            identificacion: String(row[6] || ''),
+            nombre: `${row[1] || ''} ${row[2] || ''}`.trim() || row[5] || '',
+            apellido: `${row[3] || ''} ${row[4] || ''}`.trim() || '',
+            direccion: row[7] || '',
+            telefono: undefined,
+            email: undefined
         };
         
         response200(res, clienteActualizado, "Cliente actualizado exitosamente");
         
     } catch (error) {
-        console.error('Error al actualizar cliente:', error);
-        
         if (error.errorNum) {
             const errorMessage = error.message || 'Error de base de datos';
             
