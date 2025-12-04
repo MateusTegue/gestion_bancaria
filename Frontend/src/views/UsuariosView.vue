@@ -147,6 +147,7 @@
     <Modal 
       :show="showUserModal" 
       :title="editingUser ? 'Editar Usuario' : 'Crear Usuario'"
+      :hide-footer="true"
       @close="closeUserModal"
     >
       <CreateEditUserForm
@@ -161,6 +162,7 @@
     <Modal 
       :show="showPasswordModal" 
       title="Cambiar Contraseña"
+      :hide-footer="true"
       @close="closePasswordModal"
     >
       <ChangePasswordForm
