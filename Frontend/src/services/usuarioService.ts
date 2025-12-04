@@ -80,7 +80,6 @@ export const usuarioService = {
   },
 
   async create(userData: {
-    usuarioId: number;
     rolId: number;
     clienteId?: string | null;
     usuario: string;

@@ -1,19 +1,5 @@
 <template>
   <form @submit.prevent="handleSubmit" class="space-y-4">
-    <div v-if="!isEditing">
-      <label class="block text-sm font-medium text-gray-700 mb-2">
-        ID de Usuario <span class="text-red-500">*</span>
-      </label>
-      <Input
-        v-model="form.usuarioId"
-        type="number"
-        placeholder="Ingrese el ID del usuario"
-        :error="errors.usuarioId"
-        required
-      />
-      <p v-if="errors.usuarioId" class="mt-1 text-sm text-red-600">{{ errors.usuarioId }}</p>
-    </div>
-
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-2">
         Nombre de Usuario <span class="text-red-500">*</span>
@@ -172,10 +158,6 @@ const filteredClientes = ref<Cliente[]>([]);
 const validateForm = (): boolean => {
   errors.value = {};
 
-  if (!isEditing.value && !form.value.usuarioId) {
-    errors.value.usuarioId = 'El ID de usuario es requerido';
-  }
-
   if (!form.value.usuario.trim()) {
     errors.value.usuario = 'El nombre de usuario es requerido';
   }
@@ -206,7 +188,6 @@ const handleSubmit = () => {
   };
 
   if (!isEditing.value) {
-    data.usuarioId = Number(form.value.usuarioId);
     data.password = form.value.password;
   }
 

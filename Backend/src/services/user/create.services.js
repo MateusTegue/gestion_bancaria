@@ -8,31 +8,33 @@ export const createUser = async (res, userData) => {
     let connection = null;
     
     try {
-        if (!userData.usuarioId || !userData.rolId || !userData.usuario || !userData.password) {
-            response400(res, "Los campos usuarioId, rolId, usuario y password son obligatorios");
+        if (!userData.rolId || !userData.usuario || !userData.password) {
+            response400(res, "Los campos rolId, usuario y password son obligatorios");
             return;
         }
 
         connection = await connectDB();
         
-        await connection.execute(
+        const result = await connection.execute(
             `BEGIN
                 gestion_usuarios_pkg.crear_usuario(
-                    :p_usuario_id,
                     :p_rol_id,
                     :p_cliente_id,
                     :p_usuario,
-                    :p_password
+                    :p_password,
+                    :p_usuario_id
                 );
             END;`,
             {
-                p_usuario_id: userData.usuarioId,
                 p_rol_id: userData.rolId,
                 p_cliente_id: userData.clienteId || null,
                 p_usuario: userData.usuario,
-                p_password: userData.password
+                p_password: userData.password,
+                p_usuario_id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
             }
         );
+        
+        const newUsuarioId = result.outBinds.p_usuario_id;
 
         await connection.commit();
         
@@ -41,7 +43,7 @@ export const createUser = async (res, userData) => {
                 gestion_usuarios_pkg.consultar_usuario(:p_usuario_id, :cursor);
             END;`,
             {
-                p_usuario_id: userData.usuarioId,
+                p_usuario_id: newUsuarioId,
                 cursor: { dir: oracledb.BIND_OUT, type: oracledb.CURSOR }
             }
         );
@@ -76,20 +78,23 @@ export const createUser = async (res, userData) => {
             }
         }
 
-        const parsedError = parseOracleError(error);
+        console.error("Error al crear usuario:", error);
         
-        if (parsedError.code === -20101) {
+        const errorCode = Math.abs(error.errorNum || 0);
+        
+        if (errorCode === 20101) {
             response400(res, "El usuario ya existe en el sistema");
-        } else if (parsedError.code === -20102) {
+        } else if (errorCode === 20102) {
             response400(res, "El rol especificado no existe");
-        } else if (parsedError.code === -20103) {
+        } else if (errorCode === 20103) {
             response400(res, "El cliente especificado no existe");
-        } else if (parsedError.code === -20104) {
+        } else if (errorCode === 20104) {
             response400(res, "Usuario y contraseña son obligatorios");
-        } else if (parsedError.code === -20105) {
+        } else if (errorCode === 20105) {
             response400(res, "La contraseña debe tener al menos 6 caracteres");
         } else {
-            response500(res, `Error al crear usuario: ${parsedError.message}`);
+            const parsedMessage = parseOracleError(error);
+            response500(res, `Error al crear usuario: ${parsedMessage}`);
         }
     } finally {
         await closeConnection(connection);
