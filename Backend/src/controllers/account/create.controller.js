@@ -6,7 +6,6 @@ export const createAccountController = async (req, res) => {
         const accountData = req.body;
         await createAccount(res, accountData);
     } catch (error) {
-        console.error('Error en createAccountController:', error);
         response500(res, 'Error al crear cuenta');
     }
 };

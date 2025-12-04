@@ -1,7 +1,5 @@
-import oracledb from 'oracledb';
-import dotenv from 'dotenv';
-
-dotenv.config(); 
+import 'dotenv/config';
+import oracledb from 'oracledb'; 
 
 export async function connectDB() {
   try {
@@ -10,10 +8,8 @@ export async function connectDB() {
       password: process.env.DB_PASSWORD,
       connectString: process.env.DB_CONNECT,
     });
-    console.log('Conectado a la Base de Datos Oracle!');
     return connection; 
   } catch (err) {
-    console.error('Error de conexión a Oracle:', err);
     throw err;
   }
 }

@@ -7,7 +7,6 @@ export const deleteClientController = async (req, res) => {
         const { usuarioId } = req.body;
         await deleteClient(res, id, usuarioId);
     } catch (error) {
-        console.error('Error en deleteClientController:', error);
         response500(res, 'Error al eliminar el cliente');
     }
 };

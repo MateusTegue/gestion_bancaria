@@ -35,6 +35,10 @@ CREATE OR REPLACE PACKAGE gestion_cuentas_pkg IS
         p_cursor OUT SYS_REFCURSOR
     );
 
+    PROCEDURE listar_todas_cuentas(
+        p_cursor OUT SYS_REFCURSOR
+    );
+
 END gestion_cuentas_pkg;
 /
 
@@ -84,14 +88,31 @@ CREATE OR REPLACE PACKAGE BODY gestion_cuentas_pkg IS
         p_usuario_id IN NUMBER
     ) IS
         v_rol_usuario NUMBER;
+        v_cuenta_existe NUMBER;
+        v_error_msg VARCHAR2(4000);
     BEGIN
-        -- Verificar que el usuario sea administrador (ROL_ID = 1)
-        SELECT ROL_ID INTO v_rol_usuario
-        FROM PROYECTODB.TBL_USUARIOS
-        WHERE USUARIO_ID = p_usuario_id;
+        -- Verificar que el usuario existe y obtener su rol
+        BEGIN
+            SELECT ROL_ID INTO v_rol_usuario
+            FROM PROYECTODB.TBL_USUARIOS
+            WHERE USUARIO_ID = p_usuario_id;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                RAISE_APPLICATION_ERROR(-20015, 'Usuario no encontrado: ' || p_usuario_id);
+        END;
         
+        -- Verificar que el usuario sea administrador (ROL_ID = 1)
         IF v_rol_usuario != 1 THEN
-            RAISE_APPLICATION_ERROR(-20013, 'Solo administradores pueden cambiar estado de cuentas');
+            RAISE_APPLICATION_ERROR(-20013, 'Solo administradores pueden cambiar estado de cuentas. Rol actual: ' || v_rol_usuario);
+        END IF;
+        
+        -- Verificar que la cuenta existe
+        SELECT COUNT(*) INTO v_cuenta_existe
+        FROM PROYECTODB.TBL_CUENTAS
+        WHERE CUENTA_ID = p_cuenta_id;
+        
+        IF v_cuenta_existe = 0 THEN
+            RAISE_APPLICATION_ERROR(-20014, 'Cuenta no encontrada: ' || p_cuenta_id);
         END IF;
         
         -- Cambiar estado
@@ -100,18 +121,17 @@ CREATE OR REPLACE PACKAGE BODY gestion_cuentas_pkg IS
         WHERE CUENTA_ID = p_cuenta_id;
         
         IF SQL%ROWCOUNT = 0 THEN
-            RAISE_APPLICATION_ERROR(-20014, 'Cuenta no encontrada');
+            RAISE_APPLICATION_ERROR(-20014, 'No se pudo actualizar la cuenta: ' || p_cuenta_id);
         END IF;
         
         COMMIT;
         DBMS_OUTPUT.PUT_LINE('Estado de cuenta actualizado');
         
     EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RAISE_APPLICATION_ERROR(-20015, 'Usuario no encontrado');
         WHEN OTHERS THEN
             ROLLBACK;
-            RAISE;
+            v_error_msg := SQLERRM;
+            RAISE_APPLICATION_ERROR(-20016, 'Error al cambiar estado de cuenta: ' || v_error_msg);
     END cambiar_estado_cuenta;
     
 
@@ -158,6 +178,15 @@ CREATE OR REPLACE PACKAGE BODY gestion_cuentas_pkg IS
             WHERE CLIENTE_ID = p_cliente_id;
     END listar_cuentas_cliente;
 
+    PROCEDURE listar_todas_cuentas(
+        p_cursor OUT SYS_REFCURSOR
+    ) IS
+    BEGIN
+        OPEN p_cursor FOR
+            SELECT CUENTA_ID, CLIENTE_ID, TIPO_CUENTA_ID, ESTADO_ID, SALDO
+            FROM PROYECTODB.TBL_CUENTAS
+            ORDER BY CUENTA_ID;
+    END listar_todas_cuentas;
 
     
 END gestion_cuentas_pkg;

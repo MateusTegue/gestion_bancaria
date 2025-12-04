@@ -41,7 +41,6 @@ export const listAllClients = async (res) => {
         response200(res, clients, message);
         
     } catch (error) {
-        console.error('Error al listar clientes:', error);
         if (error.errorNum) {
             response500(res, `Error de base de datos: ${error.message}`);
             return;
