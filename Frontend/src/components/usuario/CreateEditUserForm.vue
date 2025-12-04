@@ -59,45 +59,53 @@
       <p v-if="errors.rolId" class="mt-1 text-sm text-red-600">{{ errors.rolId }}</p>
     </div>
 
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">
-        Cliente (Opcional)
-      </label>
-      <div class="relative">
-        <input
-          v-model="clienteSearch"
-          @input="handleClienteSearch"
-          @focus="showClienteDropdown = true"
-          type="text"
-          placeholder="Buscar por cédula o nombre..."
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <div
-          v-if="showClienteDropdown && filteredClientes.length > 0"
-          class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
-        >
+    <Transition
+      enter-active-class="transition-all duration-300 ease-out"
+      enter-from-class="opacity-0 -translate-y-2"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition-all duration-200 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-2"
+    >
+      <div v-if="form.rolId === '3'">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Cliente <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <input
+            v-model="clienteSearch"
+            @input="handleClienteSearch"
+            @focus="showClienteDropdown = true"
+            type="text"
+            placeholder="Buscar por cédula o nombre..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
           <div
-            v-for="cliente in filteredClientes"
-            :key="cliente.id"
-            @click="selectCliente(cliente)"
-            class="px-3 py-2 cursor-pointer hover:bg-blue-50 transition-colors"
+            v-if="showClienteDropdown && filteredClientes.length > 0"
+            class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
           >
-            <span class="font-medium">{{ cliente.identificacion }}</span>
-            <span class="text-gray-600"> - {{ cliente.nombre }} {{ cliente.apellido }}</span>
+            <div
+              v-for="cliente in filteredClientes"
+              :key="cliente.id"
+              @click="selectCliente(cliente)"
+              class="px-3 py-2 cursor-pointer hover:bg-blue-50 transition-colors"
+            >
+              <span class="font-medium">{{ cliente.identificacion }}</span>
+              <span class="text-gray-600"> - {{ cliente.nombre }} {{ cliente.apellido }}</span>
+            </div>
+          </div>
+          <div
+            v-if="showClienteDropdown && clienteSearch && filteredClientes.length === 0"
+            class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-3"
+          >
+            <p class="text-sm text-gray-500">No se encontraron clientes</p>
           </div>
         </div>
-        <div
-          v-if="showClienteDropdown && clienteSearch && filteredClientes.length === 0"
-          class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-3"
-        >
-          <p class="text-sm text-gray-500">No se encontraron clientes</p>
-        </div>
+        <p v-if="selectedClienteText" class="mt-1 text-sm text-green-600">
+          Seleccionado: {{ selectedClienteText }}
+        </p>
       </div>
-      <p v-if="selectedClienteText" class="mt-1 text-sm text-green-600">
-        Seleccionado: {{ selectedClienteText }}
-      </p>
-      <p class="mt-1 text-xs text-gray-500">Solo necesario si el rol es Cliente</p>
-    </div>
+    </Transition>
 
     <div v-if="submitError" class="p-3 bg-red-50 border border-red-200 rounded-md">
       <p class="text-sm text-red-600">{{ submitError }}</p>
@@ -122,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import Button from '../Button.vue';
 import Input from '../Input.vue';
 import { clienteService } from '../../services/clienteService';
@@ -209,6 +217,15 @@ const handleCancel = () => {
   emit('cancel');
 };
 
+// Limpiar cliente si el rol no es Cliente (3)
+const handleRoleChange = () => {
+  if (form.value.rolId !== '3') {
+    form.value.clienteId = '';
+    clienteSearch.value = '';
+    selectedClienteText.value = '';
+  }
+};
+
 const loadClientes = async () => {
   try {
     clientes.value = await clienteService.listAll();
@@ -262,4 +279,6 @@ onMounted(() => {
   loadClientes();
   document.addEventListener('click', handleClickOutside);
 });
+
+watch(() => form.value.rolId, handleRoleChange);
 </script>
