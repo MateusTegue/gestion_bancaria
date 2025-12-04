@@ -82,7 +82,7 @@
           />
           <div
             v-if="showClienteDropdown && filteredClientes.length > 0"
-            class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+            class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-80 overflow-y-auto"
           >
             <div
               v-for="cliente in filteredClientes"
