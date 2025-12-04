@@ -1,6 +1,4 @@
-
-
-CREATE OR REPLACE PACKAGE PROYECTODB.GESTION_TRANSACCIONES_PKG IS
+create or replace NONEDITIONABLE PACKAGE            GESTION_TRANSACCIONES_PKG IS
 
   -- Constantes públicas (para claridad)
   c_tipo_ingreso CONSTANT NUMBER := 6; -- TIPO_PARAMETRO_ID para 'Ingreso'
@@ -27,19 +25,29 @@ CREATE OR REPLACE PACKAGE PROYECTODB.GESTION_TRANSACCIONES_PKG IS
     p_usuario_id IN NUMBER
   );
 
-  -- Función que devuelve un ref cursor con el historial
+  -- Función que devuelve un ref cursor con el historial de una cuenta
   FUNCTION generar_historial(
     p_cuenta_id IN VARCHAR2,
     p_fecha_inicio IN DATE,
     p_fecha_fin IN DATE
   ) RETURN SYS_REFCURSOR;
 
+  -- Procedimiento para listar el historial de todas las transacciones
+  PROCEDURE listar_todas_transacciones(
+    p_cursor OUT SYS_REFCURSOR
+  );
+
+  -- Procedimiento para listar todas las transacciones con filtro de fechas
+  PROCEDURE listar_todas_transacciones(
+    p_fecha_inicio IN DATE,
+    p_fecha_fin IN DATE,
+    p_cursor OUT SYS_REFCURSOR
+  );
+
 END GESTION_TRANSACCIONES_PKG;
-/
 
 
-
-CREATE OR REPLACE PACKAGE BODY PROYECTODB.GESTION_TRANSACCIONES_PKG AS
+create or replace NONEDITIONABLE PACKAGE BODY            GESTION_TRANSACCIONES_PKG AS
 
   ----------------------------------------------------------------------------
   -- UTIL: Obtener saldo y validar existencia/estado
@@ -225,5 +233,59 @@ CREATE OR REPLACE PACKAGE BODY PROYECTODB.GESTION_TRANSACCIONES_PKG AS
       RETURN NULL;
   END generar_historial;
 
+
+  ----------------------------------------------------------------------------
+  -- PROCEDURE: listar_todas_transacciones (sin filtro de fechas)
+  ----------------------------------------------------------------------------
+  PROCEDURE listar_todas_transacciones(
+    p_cursor OUT SYS_REFCURSOR
+  ) IS
+  BEGIN
+    OPEN p_cursor FOR
+      SELECT t.TRANSACCION_ID,
+             t.CUENTA_ID,
+             tp.DESCRIPCION AS TIPO_TRANSACCION,
+             t.MONTO,
+             t.FECHA_TRANSACCION
+      FROM PROYECTODB.TBL_TRANSACCIONES t
+      LEFT JOIN PROYECTODB.TBL_TIPO_PARAMETROS tp
+        ON tp.TIPO_PARAMETRO_ID = t.TIPO_TRANSACCION_ID
+       AND tp.NOMBRE = 'Tipo-Transac'
+      ORDER BY t.FECHA_TRANSACCION DESC;
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE_APPLICATION_ERROR(-20020, 'Error al listar transacciones: ' || SQLERRM);
+  END listar_todas_transacciones;
+
+
+  ----------------------------------------------------------------------------
+  -- PROCEDURE: listar_todas_transacciones (con filtro de fechas)
+  ----------------------------------------------------------------------------
+  PROCEDURE listar_todas_transacciones(
+    p_fecha_inicio IN DATE,
+    p_fecha_fin IN DATE,
+    p_cursor OUT SYS_REFCURSOR
+  ) IS
+  BEGIN
+    IF p_fecha_inicio > p_fecha_fin THEN
+      RAISE_APPLICATION_ERROR(-20021, 'La fecha de inicio no puede ser mayor a la fecha fin');
+    END IF;
+
+    OPEN p_cursor FOR
+      SELECT t.TRANSACCION_ID,
+             t.CUENTA_ID,
+             tp.DESCRIPCION AS TIPO_TRANSACCION,
+             t.MONTO,
+             t.FECHA_TRANSACCION
+      FROM PROYECTODB.TBL_TRANSACCIONES t
+      LEFT JOIN PROYECTODB.TBL_TIPO_PARAMETROS tp
+        ON tp.TIPO_PARAMETRO_ID = t.TIPO_TRANSACCION_ID
+       AND tp.NOMBRE = 'Tipo-Transac'
+      WHERE t.FECHA_TRANSACCION BETWEEN p_fecha_inicio AND p_fecha_fin
+      ORDER BY t.FECHA_TRANSACCION DESC;
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE_APPLICATION_ERROR(-20022, 'Error al listar transacciones con filtro: ' || SQLERRM);
+  END listar_todas_transacciones;
+
 END GESTION_TRANSACCIONES_PKG;
-/
