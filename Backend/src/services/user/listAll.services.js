@@ -4,7 +4,7 @@ import { response200, response500 } from '../../utils/responses.js';
 import { closeConnection } from '../../utils/closeConnection.js';
 import { parseOracleError } from '../../utils/parseOracleError.js';
 
-export const listAllUsers = async (res) => {
+export const listAllUsers = async (res, page = 1, limit = 10) => {
     let connection = null;
     
     try {
@@ -31,7 +31,26 @@ export const listAllUsers = async (res) => {
             nombreCliente: row[4]
         }));
 
-        response200(res, users, "Usuarios listados exitosamente");
+        // Aplicar paginación
+        const total = users.length;
+        const totalPages = Math.ceil(total / limit);
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedUsers = users.slice(startIndex, endIndex);
+
+        const paginationData = {
+            data: paginatedUsers,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems: total,
+                itemsPerPage: limit,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1
+            }
+        };
+
+        response200(res, paginationData, "Usuarios listados exitosamente");
 
     } catch (error) {
         const parsedError = parseOracleError(error);

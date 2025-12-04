@@ -12,11 +12,46 @@ const mapUsuarioFromBackend = (data: UsuarioBackend): Usuario => {
   };
 };
 
+interface PaginationParams {
+  page?: number;
+  limit?: number;
+}
+
+interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
 export const usuarioService = {
-  async listAll(): Promise<Usuario[]> {
-    const response = await api.get<ApiResponse<UsuarioBackend[]>>('/usuarios');
-    const data = response.data.data || [];
-    return data.map(mapUsuarioFromBackend);
+  async listAll(params?: PaginationParams): Promise<PaginatedResponse<Usuario>> {
+    const response = await api.get<ApiResponse<PaginatedResponse<UsuarioBackend>>>('/usuarios', { params });
+    const paginatedData = response.data.data;
+    
+    if (!paginatedData) {
+      return {
+        data: [],
+        pagination: {
+          currentPage: 1,
+          totalPages: 0,
+          totalItems: 0,
+          itemsPerPage: params?.limit || 10,
+          hasNextPage: false,
+          hasPreviousPage: false
+        }
+      };
+    }
+    
+    return {
+      data: paginatedData.data.map(mapUsuarioFromBackend),
+      pagination: paginatedData.pagination
+    };
   },
 
   async getById(usuarioId: number): Promise<Usuario> {

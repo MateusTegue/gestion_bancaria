@@ -34,6 +34,19 @@
             <option value="3">Cliente</option>
           </select>
         </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Registros por página</label>
+          <select
+            v-model="pagination.itemsPerPage"
+            @change="handleItemsPerPageChange"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option :value="5">5</option>
+            <option :value="10">10</option>
+            <option :value="25">25</option>
+            <option :value="50">50</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -121,6 +134,15 @@
       </table>
     </div>
 
+    <!-- Paginación -->
+    <Pagination
+      v-if="pagination.totalItems > 0"
+      :current-page="pagination.currentPage"
+      :items-per-page="pagination.itemsPerPage"
+      :total-items="pagination.totalItems"
+      @page-change="handlePageChange"
+    />
+
     <!-- Modal Crear/Editar Usuario -->
     <Modal 
       :show="showUserModal" 
@@ -157,6 +179,7 @@ import { useToast } from 'vue-toastification';
 import Button from '../components/Button.vue';
 import Input from '../components/Input.vue';
 import Modal from '../components/Modal.vue';
+import Pagination from '../components/Pagination.vue';
 import CreateEditUserForm from '../components/usuario/CreateEditUserForm.vue';
 import ChangePasswordForm from '../components/usuario/ChangePasswordForm.vue';
 import usuarioService from '../services/usuarioService';
@@ -177,11 +200,25 @@ const selectedUser = ref<Usuario | null>(null);
 const searchQuery = ref('');
 const selectedRole = ref('');
 
-const loadUsuarios = async () => {
+const pagination = ref({
+  currentPage: 1,
+  totalPages: 0,
+  totalItems: 0,
+  itemsPerPage: 10,
+  hasNextPage: false,
+  hasPreviousPage: false
+});
+
+const loadUsuarios = async (page = 1) => {
   loading.value = true;
   error.value = '';
   try {
-    usuarios.value = await usuarioService.listAll();
+    const response = await usuarioService.listAll({ 
+      page, 
+      limit: pagination.value.itemsPerPage 
+    });
+    usuarios.value = response.data;
+    pagination.value = response.pagination;
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Error al cargar usuarios';
     toast.error(error.value);
@@ -190,18 +227,38 @@ const loadUsuarios = async () => {
   }
 };
 
+const handlePageChange = (page: number) => {
+  pagination.value.currentPage = page;
+  loadUsuarios(page);
+};
+
+const handleItemsPerPageChange = () => {
+  pagination.value.currentPage = 1;
+  loadUsuarios(1);
+};
+
 const handleSearch = async () => {
   if (searchQuery.value.trim()) {
     try {
       loading.value = true;
       usuarios.value = await usuarioService.searchByUsername(searchQuery.value);
+      // Ocultar paginación durante búsqueda
+      pagination.value = {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: usuarios.value.length,
+        itemsPerPage: usuarios.value.length,
+        hasNextPage: false,
+        hasPreviousPage: false
+      };
     } catch (err: any) {
       toast.error('Error al buscar usuarios');
     } finally {
       loading.value = false;
     }
   } else {
-    loadUsuarios();
+    pagination.value.currentPage = 1;
+    loadUsuarios(1);
   }
 };
 
@@ -210,13 +267,23 @@ const handleRoleFilter = async () => {
     try {
       loading.value = true;
       usuarios.value = await usuarioService.listByRole(Number(selectedRole.value));
+      // Ocultar paginación durante filtro
+      pagination.value = {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: usuarios.value.length,
+        itemsPerPage: usuarios.value.length,
+        hasNextPage: false,
+        hasPreviousPage: false
+      };
     } catch (err: any) {
       toast.error('Error al filtrar usuarios');
     } finally {
       loading.value = false;
     }
   } else {
-    loadUsuarios();
+    pagination.value.currentPage = 1;
+    loadUsuarios(1);
   }
 };
 
@@ -256,7 +323,7 @@ const handleSubmit = async (data: any) => {
       toast.success('Usuario creado exitosamente');
     }
     closeUserModal();
-    loadUsuarios();
+    loadUsuarios(pagination.value.currentPage);
   } catch (err: any) {
     toast.error(err.response?.data?.message || 'Error al guardar usuario');
   } finally {
@@ -284,7 +351,7 @@ const confirmDelete = async (usuario: Usuario) => {
       const adminId = 1; // TODO: Obtener del contexto de autenticación
       await usuarioService.delete(usuario.usuarioId, adminId);
       toast.success('Usuario eliminado exitosamente');
-      loadUsuarios();
+      loadUsuarios(pagination.value.currentPage);
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Error al eliminar usuario');
     }
@@ -301,6 +368,6 @@ const getRoleBadgeClass = (rolId: number) => {
 };
 
 onMounted(() => {
-  loadUsuarios();
+  loadUsuarios(1);
 });
 </script>
