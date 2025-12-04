@@ -2,11 +2,28 @@ import api from './api';
 import type { Usuario, UsuarioBackend, ApiResponse } from '../types';
 
 const mapUsuarioFromBackend = (data: UsuarioBackend): Usuario => {
+  const rolNombre = String(data.rolNombre || data.ROL_NOMBRE || data.rol || data.ROL || '');
+  
+  // Mapear el nombre del rol al ID correspondiente
+  let rolId = Number(data.rolId || data.ROL_ID);
+  if (isNaN(rolId)) {
+    const rolNombreUpper = rolNombre.toUpperCase();
+    if (rolNombreUpper === 'ADMINISTRADOR' || rolNombreUpper === 'ADMON') {
+      rolId = 1;
+    } else if (rolNombreUpper === 'ANALISTA') {
+      rolId = 2;
+    } else if (rolNombreUpper === 'CLIENTE') {
+      rolId = 3;
+    } else {
+      rolId = 0;
+    }
+  }
+  
   return {
     usuarioId: Number(data.usuarioId || data.USUARIO_ID),
     usuario: String(data.usuario || data.USUARIO),
-    rolId: Number(data.rolId || data.ROL_ID),
-    rolNombre: String(data.rolNombre || data.ROL_NOMBRE || data.rol || data.ROL || ''),
+    rolId,
+    rolNombre,
     clienteId: data.clienteId || data.CLIENTE_ID || null,
     nombreCliente: data.nombreCliente || data.NOMBRE_CLIENTE || null
   };

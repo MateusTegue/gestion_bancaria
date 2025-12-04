@@ -281,4 +281,26 @@ onMounted(() => {
 });
 
 watch(() => form.value.rolId, handleRoleChange);
+
+watch(() => props.initialData, (newData) => {
+  if (newData) {
+    form.value.usuarioId = newData.usuarioId?.toString() || '';
+    form.value.usuario = newData.usuario || '';
+    form.value.password = '';
+    form.value.rolId = newData.rolId?.toString() || '';
+    form.value.clienteId = newData.clienteId?.toString() || '';
+    
+    // Buscar y mostrar el cliente si hay uno asociado
+    if (newData.clienteId) {
+      const cliente = clientes.value.find(c => c.id.toString() === newData.clienteId);
+      if (cliente) {
+        selectedClienteText.value = `${cliente.identificacion} - ${cliente.nombre} ${cliente.apellido}`;
+        clienteSearch.value = selectedClienteText.value;
+      }
+    } else {
+      selectedClienteText.value = '';
+      clienteSearch.value = '';
+    }
+  }
+}, { immediate: true });
 </script>

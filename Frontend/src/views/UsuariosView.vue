@@ -295,7 +295,8 @@ const openCreateModal = () => {
 };
 
 const openEditModal = (usuario: Usuario) => {
-  editingUser.value = usuario;
+  console.log('Usuario a editar:', usuario);
+  editingUser.value = { ...usuario };
   showUserModal.value = true;
 };
 
