@@ -15,6 +15,16 @@ import validarActivaAccountRoutes from './account/validarActiva.route.js';
 
 import loginRoutes from './auth/login.route.js';
 
+import createUserRoutes from './user/create.route.js';
+import updateUserRoutes from './user/update.route.js';
+import changePasswordRoutes from './user/changePassword.route.js';
+import resetPasswordRoutes from './user/resetPassword.route.js';
+import deleteUserRoutes from './user/delete.route.js';
+import getUserByIdRoutes from './user/getById.route.js';
+import listAllUsersRoutes from './user/listAll.route.js';
+import listUsersByRoleRoutes from './user/listByRole.route.js';
+import searchUserByUsernameRoutes from './user/searchByUsername.route.js';
+
 import realizarDepositoRoutes from './transaction/realizarDeposito.route.js';
 import realizarRetiroRoutes from './transaction/realizarRetiro.route.js';
 import realizarTransferenciaRoutes from './transaction/realizarTransferencia.route.js';
@@ -24,6 +34,16 @@ import listarHistorialUsuarioRoutes from './transaction/listarHistorialUsuario.r
 const router = Router();
 
 router.use('/api/auth', loginRoutes);
+
+router.use('/api/usuarios/buscar', searchUserByUsernameRoutes);
+router.use('/api/usuarios/rol', listUsersByRoleRoutes);
+router.use('/api/usuarios', createUserRoutes);
+router.use('/api/usuarios', listAllUsersRoutes);
+router.use('/api/usuarios', getUserByIdRoutes);
+router.use('/api/usuarios', updateUserRoutes);
+router.use('/api/usuarios', deleteUserRoutes);
+router.use('/api/usuarios', changePasswordRoutes);
+router.use('/api/usuarios', resetPasswordRoutes);
 
 router.use('/api/clientes', listAllRoutes);
 router.use('/api/clientes', createRoutes);

@@ -51,6 +51,29 @@ export interface Usuario {
   rolId: number;
   rolNombre?: string;
   clienteId?: string | number | null;
+  nombreCliente?: string | null;
+}
+
+export interface UsuarioBackend {
+  usuarioId?: number;
+  USUARIO_ID?: number;
+  usuario?: string;
+  USUARIO?: string;
+  rolId?: number;
+  ROL_ID?: number;
+  rolNombre?: string;
+  ROL_NOMBRE?: string;
+  rol?: string;
+  ROL?: string;
+  clienteId?: string | number | null;
+  CLIENTE_ID?: string | number | null;
+  nombreCliente?: string | null;
+  NOMBRE_CLIENTE?: string | null;
+}
+
+export interface Rol {
+  rolId: number;
+  nombre: string;
 }
 
 export interface DepositoData {

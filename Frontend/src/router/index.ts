@@ -53,6 +53,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, allowedRoles: [1, 2, 3] }, // ADMON, ANALISTA y CLIENTE
   },
   {
+    path: '/usuarios',
+    name: 'usuarios',
+    component: () => import('../views/UsuariosView.vue'),
+    meta: { requiresAuth: true, allowedRoles: [1] }, // Solo ADMON
+  },
+  {
     path: '/perfil',
     name: 'perfil',
     component: () => import('../views/PerfilView.vue'),

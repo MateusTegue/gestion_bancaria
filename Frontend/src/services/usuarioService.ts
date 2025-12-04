@@ -1,0 +1,93 @@
+import api from './api';
+import type { Usuario, UsuarioBackend, ApiResponse } from '../types';
+
+const mapUsuarioFromBackend = (data: UsuarioBackend): Usuario => {
+  return {
+    usuarioId: Number(data.usuarioId || data.USUARIO_ID),
+    usuario: String(data.usuario || data.USUARIO),
+    rolId: Number(data.rolId || data.ROL_ID),
+    rolNombre: String(data.rolNombre || data.ROL_NOMBRE || data.rol || data.ROL || ''),
+    clienteId: data.clienteId || data.CLIENTE_ID || null,
+    nombreCliente: data.nombreCliente || data.NOMBRE_CLIENTE || null
+  };
+};
+
+export const usuarioService = {
+  async listAll(): Promise<Usuario[]> {
+    const response = await api.get<ApiResponse<UsuarioBackend[]>>('/usuarios');
+    const data = response.data.data || [];
+    return data.map(mapUsuarioFromBackend);
+  },
+
+  async getById(usuarioId: number): Promise<Usuario> {
+    const response = await api.get<ApiResponse<UsuarioBackend>>(`/usuarios/${usuarioId}`);
+    if (!response.data.data) {
+      throw new Error(response.data.message || 'Usuario no encontrado');
+    }
+    return mapUsuarioFromBackend(response.data.data);
+  },
+
+  async create(userData: {
+    usuarioId: number;
+    rolId: number;
+    clienteId?: string | null;
+    usuario: string;
+    password: string;
+  }): Promise<Usuario> {
+    const response = await api.post<ApiResponse<UsuarioBackend>>('/usuarios', userData);
+    if (!response.data.data) {
+      throw new Error(response.data.message || 'Error al crear usuario');
+    }
+    return mapUsuarioFromBackend(response.data.data);
+  },
+
+  async update(usuarioId: number, userData: {
+    rolId: number;
+    clienteId?: string | null;
+    usuario: string;
+  }): Promise<Usuario> {
+    const response = await api.put<ApiResponse<UsuarioBackend>>(`/usuarios/${usuarioId}`, userData);
+    if (!response.data.data) {
+      throw new Error(response.data.message || 'Error al actualizar usuario');
+    }
+    return mapUsuarioFromBackend(response.data.data);
+  },
+
+  async delete(usuarioId: number, adminId: number): Promise<void> {
+    await api.delete(`/usuarios/${usuarioId}`, {
+      data: { adminId }
+    });
+  },
+
+  async changePassword(passwordData: {
+    usuarioId: number;
+    passwordActual: string;
+    passwordNuevo: string;
+  }): Promise<void> {
+    await api.put('/usuarios/cambiar-password', passwordData);
+  },
+
+  async resetPassword(resetData: {
+    usuarioId: number;
+    passwordNuevo: string;
+    adminId: number;
+  }): Promise<void> {
+    await api.put('/usuarios/resetear-password', resetData);
+  },
+
+  async listByRole(rolId: number): Promise<Usuario[]> {
+    const response = await api.get<ApiResponse<UsuarioBackend[]>>(`/usuarios/rol/${rolId}`);
+    const data = response.data.data || [];
+    return data.map(mapUsuarioFromBackend);
+  },
+
+  async searchByUsername(usuario: string): Promise<Usuario[]> {
+    const response = await api.get<ApiResponse<UsuarioBackend[]>>(`/usuarios/buscar`, {
+      params: { usuario }
+    });
+    const data = response.data.data || [];
+    return data.map(mapUsuarioFromBackend);
+  }
+};
+
+export default usuarioService;
