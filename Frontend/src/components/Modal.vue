@@ -15,7 +15,7 @@
               <slot />
             </ModalBody>
 
-            <template #footer>
+            <template #footer v-if="!hideFooter">
               <ModalFooter
                 @close="handleClose"
                 @confirm="handleConfirm"
@@ -57,6 +57,7 @@ import ModalFooter from './ModalFooter.vue';
 interface Props {
   show: boolean;
   title: string;
+  hideFooter?: boolean;
 }
 
 const props = defineProps<Props>();

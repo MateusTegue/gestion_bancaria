@@ -6,11 +6,11 @@
 CREATE OR REPLACE PACKAGE gestion_usuarios_pkg IS
     -- Procedimiento para crear un nuevo usuario
     PROCEDURE crear_usuario(
-        p_usuario_id IN NUMBER,
         p_rol_id IN NUMBER,
         p_cliente_id IN VARCHAR2,
         p_usuario IN VARCHAR2,
-        p_password IN VARCHAR2
+        p_password IN VARCHAR2,
+        p_usuario_id OUT NUMBER
     );
     
     -- Procedimiento para actualizar información del usuario
@@ -94,19 +94,22 @@ CREATE OR REPLACE PACKAGE BODY gestion_usuarios_pkg IS
     -- Descripción: Crea un nuevo usuario en el sistema
     -- =====================================================
     PROCEDURE crear_usuario(
-        p_usuario_id IN NUMBER,
         p_rol_id IN NUMBER,
         p_cliente_id IN VARCHAR2,
         p_usuario IN VARCHAR2,
-        p_password IN VARCHAR2
+        p_password IN VARCHAR2,
+        p_usuario_id OUT NUMBER
     ) IS
         v_existe NUMBER;
         v_cliente_existe BOOLEAN;
     BEGIN
+        -- Generar nuevo ID usando la secuencia
+        SELECT SEQ_USUARIO_ID.NEXTVAL INTO p_usuario_id FROM DUAL;
+        
         -- Validar que el usuario no exista
         SELECT COUNT(*) INTO v_existe
         FROM PROYECTODB.TBL_USUARIOS
-        WHERE USUARIO_ID = p_usuario_id OR USUARIO = p_usuario;
+        WHERE USUARIO = p_usuario;
         
         IF v_existe > 0 THEN
             RAISE_APPLICATION_ERROR(-20101, 'El usuario ya existe en el sistema');
