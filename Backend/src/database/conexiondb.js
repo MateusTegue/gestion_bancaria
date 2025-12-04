@@ -8,6 +8,7 @@ export async function connectDB() {
       password: process.env.DB_PASSWORD,
       connectString: process.env.DB_CONNECT,
     });
+    console.log('Database connection established');
     return connection; 
   } catch (err) {
     throw err;
