@@ -35,15 +35,17 @@ const router = Router();
 
 router.use('/api/auth', loginRoutes);
 
+// Rutas más específicas primero
 router.use('/api/usuarios/buscar', searchUserByUsernameRoutes);
 router.use('/api/usuarios/rol', listUsersByRoleRoutes);
+router.use('/api/usuarios/cambiar-password', changePasswordRoutes);
+router.use('/api/usuarios/resetear-password', resetPasswordRoutes);
+// Rutas con parámetros después
 router.use('/api/usuarios', createUserRoutes);
 router.use('/api/usuarios', listAllUsersRoutes);
 router.use('/api/usuarios', getUserByIdRoutes);
 router.use('/api/usuarios', updateUserRoutes);
 router.use('/api/usuarios', deleteUserRoutes);
-router.use('/api/usuarios', changePasswordRoutes);
-router.use('/api/usuarios', resetPasswordRoutes);
 
 router.use('/api/clientes', listAllRoutes);
 router.use('/api/clientes', createRoutes);
