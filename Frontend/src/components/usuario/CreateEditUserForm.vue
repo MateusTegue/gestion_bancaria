@@ -61,13 +61,41 @@
 
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-2">
-        ID de Cliente (Opcional)
+        Cliente (Opcional)
       </label>
-      <Input
-        v-model="form.clienteId"
-        type="text"
-        placeholder="Asociar con un cliente"
-      />
+      <div class="relative">
+        <input
+          v-model="clienteSearch"
+          @input="handleClienteSearch"
+          @focus="showClienteDropdown = true"
+          type="text"
+          placeholder="Buscar por cédula o nombre..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <div
+          v-if="showClienteDropdown && filteredClientes.length > 0"
+          class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+        >
+          <div
+            v-for="cliente in filteredClientes"
+            :key="cliente.id"
+            @click="selectCliente(cliente)"
+            class="px-3 py-2 cursor-pointer hover:bg-blue-50 transition-colors"
+          >
+            <span class="font-medium">{{ cliente.identificacion }}</span>
+            <span class="text-gray-600"> - {{ cliente.nombre }} {{ cliente.apellido }}</span>
+          </div>
+        </div>
+        <div
+          v-if="showClienteDropdown && clienteSearch && filteredClientes.length === 0"
+          class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-3"
+        >
+          <p class="text-sm text-gray-500">No se encontraron clientes</p>
+        </div>
+      </div>
+      <p v-if="selectedClienteText" class="mt-1 text-sm text-green-600">
+        Seleccionado: {{ selectedClienteText }}
+      </p>
       <p class="mt-1 text-xs text-gray-500">Solo necesario si el rol es Cliente</p>
     </div>
 
@@ -94,10 +122,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import Button from '../Button.vue';
 import Input from '../Input.vue';
-import type { Usuario } from '../../types';
+import { clienteService } from '../../services/clienteService';
+import type { Usuario, Cliente } from '../../types';
 
 interface Props {
   initialData?: Usuario | null;
@@ -125,6 +154,12 @@ const form = ref({
 
 const errors = ref<Record<string, string>>({});
 const submitError = ref('');
+
+const clientes = ref<Cliente[]>([]);
+const clienteSearch = ref('');
+const showClienteDropdown = ref(false);
+const selectedClienteText = ref('');
+const filteredClientes = ref<Cliente[]>([]);
 
 const validateForm = (): boolean => {
   errors.value = {};
@@ -173,4 +208,58 @@ const handleSubmit = () => {
 const handleCancel = () => {
   emit('cancel');
 };
+
+const loadClientes = async () => {
+  try {
+    clientes.value = await clienteService.listAll();
+    filteredClientes.value = clientes.value;
+    
+    // Si hay un clienteId inicial, buscar y mostrar el cliente
+    if (props.initialData?.clienteId) {
+      const cliente = clientes.value.find(c => c.id.toString() === props.initialData?.clienteId);
+      if (cliente) {
+        selectedClienteText.value = `${cliente.identificacion} - ${cliente.nombre} ${cliente.apellido}`;
+        clienteSearch.value = selectedClienteText.value;
+      }
+    }
+  } catch (error) {
+    console.error('Error al cargar clientes:', error);
+  }
+};
+
+const handleClienteSearch = () => {
+  const search = clienteSearch.value.toLowerCase();
+  if (!search) {
+    filteredClientes.value = clientes.value;
+    form.value.clienteId = '';
+    selectedClienteText.value = '';
+    return;
+  }
+  
+  filteredClientes.value = clientes.value.filter(cliente => {
+    const nombreCompleto = `${cliente.nombre} ${cliente.apellido}`.toLowerCase();
+    const identificacion = cliente.identificacion.toLowerCase();
+    return nombreCompleto.includes(search) || identificacion.includes(search);
+  });
+};
+
+const selectCliente = (cliente: Cliente) => {
+  form.value.clienteId = cliente.id.toString();
+  selectedClienteText.value = `${cliente.identificacion} - ${cliente.nombre} ${cliente.apellido}`;
+  clienteSearch.value = selectedClienteText.value;
+  showClienteDropdown.value = false;
+};
+
+// Cerrar dropdown al hacer clic fuera
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement;
+  if (!target.closest('.relative')) {
+    showClienteDropdown.value = false;
+  }
+};
+
+onMounted(() => {
+  loadClientes();
+  document.addEventListener('click', handleClickOutside);
+});
 </script>
