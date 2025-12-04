@@ -1,14 +1,15 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold text-gray-800">Gestión de Usuarios</h1>
-      <Button @click="openCreateModal" variant="primary">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        Crear Usuario
-      </Button>
-    </div>
+  <Layout>
+    <div class="px-4 py-6">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
+        <Button @click="openCreateModal" variant="primary">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Crear Usuario
+        </Button>
+      </div>
 
     <!-- Filtros -->
     <div class="bg-white rounded-lg shadow-md p-4 mb-6">
@@ -172,12 +173,15 @@
           @cancel="closePasswordModal"
         />
     </Modal>
-  </div>
+    </div>
+  </Layout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
+import { useAuth } from '../composables/useAuth';
+import Layout from '../components/Layout.vue';
 import Button from '../components/Button.vue';
 import Input from '../components/Input.vue';
 import Modal from '../components/Modal.vue';
@@ -188,6 +192,7 @@ import usuarioService from '../services/usuarioService';
 import type { Usuario } from '../types';
 
 const toast = useToast();
+const { getUsuario } = useAuth();
 
 const usuarios = ref<Usuario[]>([]);
 const loading = ref(false);
@@ -350,13 +355,16 @@ const handleChangePassword = async (data: any) => {
 const confirmDelete = async (usuario: Usuario) => {
   if (confirm(`¿Está seguro de eliminar el usuario "${usuario.usuario}"?`)) {
     try {
-      // Aquí deberías obtener el ID del admin desde el contexto de usuario logueado
-      const adminId = 1; // TODO: Obtener del contexto de autenticación
-      await usuarioService.delete(usuario.usuarioId, adminId);
+      const currentUser = getUsuario();
+      if (!currentUser) {
+        toast.error('No se pudo obtener el usuario actual');
+        return;
+      }
+      await usuarioService.delete(usuario.usuarioId, currentUser.usuarioId);
       toast.success('Usuario eliminado exitosamente');
       loadUsuarios(pagination.value.currentPage);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Error al eliminar usuario');
+      toast.error(err.response?.data?.error || err.response?.data?.message || 'Error al eliminar usuario');
     }
   }
 };

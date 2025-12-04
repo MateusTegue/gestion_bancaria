@@ -41,16 +41,19 @@ export const deleteUser = async (res, usuarioId, adminId) => {
             }
         }
 
-        const parsedError = parseOracleError(error);
+        console.error("Error al eliminar usuario:", error);
         
-        if (parsedError.code === -20111) {
+        const errorCode = Math.abs(error.errorNum || 0);
+        
+        if (errorCode === 20111) {
             response403(res, "Solo administradores pueden eliminar usuarios");
-        } else if (parsedError.code === -20112) {
+        } else if (errorCode === 20112) {
             response400(res, "No puede eliminar su propio usuario");
-        } else if (parsedError.code === -20107) {
+        } else if (errorCode === 20107) {
             response400(res, "Usuario no encontrado");
         } else {
-            response500(res, `Error al eliminar usuario: ${parsedError.message}`);
+            const parsedMessage = parseOracleError(error);
+            response500(res, `Error al eliminar usuario: ${parsedMessage}`);
         }
     } finally {
         await closeConnection(connection);
